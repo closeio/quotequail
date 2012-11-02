@@ -14,8 +14,8 @@ def quote(text):
     lines = text.split('\n')
 
     regexes = [
-        '^On .* wrote:$', # apple mail/gmail reply
-        '^Am .* schrieb .*:$', # German
+        '^On .*wrote:$', # apple mail/gmail reply
+        '^Am .*schrieb .*:$', # German
         '[0-9]{4}/[0-9]{1,2}/[0-9]{1,2} .* <.*@.*>$', # gmail (?) reply
         '^________________________________$', # yahoo?
         '^Begin forwarded message:$', # apple mail forward
