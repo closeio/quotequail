@@ -251,6 +251,15 @@ Hey: This is very important
 """), None)
 
 
+        # No quote / headers in forwarded message
+        self.assertEqual(unwrap("""Begin forwarded message:
+Hello
+"""), {
+            'type': 'forward',
+            'text': 'Hello',
+        })
+
+
 if __name__ == '__main__':
     unittest.main()
 

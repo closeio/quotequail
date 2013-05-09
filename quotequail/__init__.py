@@ -211,7 +211,7 @@ def unwrap(text):
                 hdrs, rest = _extract_headers(lines[start+1:])
                 return main_type, lines[:start], hdrs, rest, []
             else:
-                return main_type, lines[:start], None, lines[start+start2+1:], []
+                return main_type, lines[:start], None, lines[start+(start2 or 0)+1:], []
 
         elif typ == 'headers':
             main_type = 'forward'
