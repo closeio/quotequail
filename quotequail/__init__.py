@@ -117,8 +117,10 @@ def unwrap(text):
         Returns (None, None) if nothing was found.
         """
 
-        # minimum number of lines to tell that this is actually
-        _min_headers = 3
+        # minimum number of headers that we recognize
+        _min_headers = 2
+
+        # minimum number of lines to recognize a quoted block
         _min_quoted = 3
 
         for n, line in enumerate(lines):
@@ -148,17 +150,8 @@ def unwrap(text):
             # Find a header
             match = header_re.match(line)
             if match:
-                # Check if there are at least _min_headers lines that match
-                matched_lines = 1
-                for line in lines[n+1:]:
-                    if not line.strip():
-                        continue
-                    if not header_re.match(line):
-                        break
-                    else:
-                        matched_lines += 1
-                    if matched_lines == _min_headers:
-                        return n, 'headers'
+                if len(_extract_headers(lines[n:])[0]) >= _min_headers:
+                    return n, 'headers'
 
         return None, None
 

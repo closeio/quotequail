@@ -48,9 +48,9 @@ Some quoted text.
 
 
 class UnwrapTestCase(unittest.TestCase):
-    def test_unwrap(self):
-        # TODO: Test this function with replies
+    # TODO: Test this function with replies
 
+    def test_gmail_forward(self):
         # Gmail forward
         self.assertEqual(unwrap("""Hello
 
@@ -72,6 +72,7 @@ Learn Spanish
             'text': 'Spanish Classes\nLearn Spanish',
         })
 
+    def test_apple_forward(self):
         # Apple Mail forward
         self.assertEqual(unwrap("""Hello
 
@@ -96,6 +97,7 @@ Text bottom
             'text_bottom': 'Text bottom',
         })
 
+    def test_sparrow_forward(self):
         # Sparrow forward
         self.assertEqual(unwrap("""Hello
 
@@ -122,6 +124,7 @@ Text bottom
             'text_bottom': 'Text bottom',
         })
 
+    def test_bold_headers(self):
         # Forwrad with *bold* text
         self.assertEqual(unwrap("""Hello
 
@@ -142,6 +145,7 @@ This is interesting."""), {
             'text': 'This is interesting.',
         })
 
+    def test_no_forward_text(self):
         # No forwarding message text
         self.assertEqual(unwrap("""Hello
 
@@ -161,6 +165,7 @@ Original text
             'text': 'Original text',
         })
 
+    def test_no_forward_text_quoted(self):
         # No forwarding message text
         self.assertEqual(unwrap("""Hello
 
@@ -180,6 +185,7 @@ Original text
             'text': 'Original text',
         })
 
+    def test_outlook_forward(self):
         # Outlook?
         self.assertEqual(unwrap("""-------- Original Message --------
 Subject: \tSome Newsletter
@@ -200,6 +206,7 @@ OHAI"""), {
         })
 
 
+    def test_spacing(self):
         # Some clients (Blackberry?) have weird whitespace rules
         self.assertEqual(unwrap("""hello world
 
@@ -208,6 +215,8 @@ From: "Some One" <some.one@example.com>
 
 Date: Sat, 22 Mar 2008 12:16:06 
 To:<to@example.com>
+
+
 Subject: Antw: FW: html
 
 
@@ -222,7 +231,7 @@ OHAI...
             'text': 'OHAI...',
         })
 
-
+    def test_quote(self):
         # Just a quote
         self.assertEqual(unwrap("""hello world
 
@@ -242,6 +251,7 @@ kthxbye
         })
 
 
+    def test_no_message(self):
         # No message
         self.assertEqual(unwrap("""hello world
 
@@ -251,12 +261,31 @@ Hey: This is very important
 """), None)
 
 
+    def test_forward_no_headers(self):
         # No quote / headers in forwarded message
         self.assertEqual(unwrap("""Begin forwarded message:
 Hello
 """), {
             'type': 'forward',
             'text': 'Hello',
+        })
+
+    def test_confusing_email_signature(self):
+        self.assertEqual(unwrap("""Phone: 12345
+Fax: 67890
+Skype: foobar
+
+---------- Forwarded message ----------
+From: Someone <someone@example.com>
+Subject: The email
+
+Email text.
+"""), {
+            'text_top': 'Phone: 12345\nFax: 67890\nSkype: foobar',
+            'type': 'forward',
+            'from': 'Someone <someone@example.com>',
+            'subject': 'The email',
+            'text': 'Email text.',
         })
 
 
