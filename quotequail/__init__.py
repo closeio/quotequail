@@ -57,25 +57,31 @@ HEADER_MAP = {
     'asunto': 'subject',
 }
 
+COMPILED_PATTERNS = [re.compile(regex) for regex in REPLY_PATTERNS + FORWARD_PATTERNS ]
+
 """
-Takes a plain text message as an argument, returns a list of tuples.
-The first argument of the tuple denotes whether the text should be expanded by default.
+Takes a plain text message as an argument, returns a list of tuples. The first
+argument of the tuple denotes whether the text should be expanded by default.
 E.g. [(True, 'expanded text'), (False, 'Some quoted text')]
+
+Unless the limit param is set to None, the text will automatically be quoted
+starting at the line where the limit is reached.
 """
-def quote(text):
+def quote(text, limit=1000):
     lines = text.split('\n')
 
-    regexes = REPLY_PATTERNS + FORWARD_PATTERNS
-    
     found = None
 
     for n, line in enumerate(lines):
         if found != None:
             break
-        for regex in regexes:
-            if re.match(regex, line.strip()):
+        for regex in COMPILED_PATTERNS:
+            if regex.match(line.strip()):
                 found = n
                 break
+        if n == limit:
+            found = n
+            break
 
     if found != None:
         return [(True, '\n'.join(lines[:found+1])), (False, '\n'.join(lines[found+1:]))]
