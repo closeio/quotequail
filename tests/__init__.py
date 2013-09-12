@@ -4,7 +4,7 @@ import unittest
 from quotequail import quote, unwrap
 
 class QuoteTestCase(unittest.TestCase):
-    def test_quote(self):
+    def test_quote_reply_1(self):
         self.assertEqual(
             quote(
 """Hello world.
@@ -17,6 +17,21 @@ On 2012-10-16 at 17:02 , Someone <someone@example.com> wrote:
              (False, '\n> Some quoted text\n')]
         )
 
+    def test_quote_reply_2(self):
+        self.assertEqual(
+            quote(
+"""Hello world.
+
+On 2012-10-16 at 17:02 , Someone <
+someone@example.com> wrote:
+
+> Some quoted text
+"""),
+            [(True, 'Hello world.\n\nOn 2012-10-16 at 17:02 , Someone <\nsomeone@example.com> wrote:'),
+             (False, '\n> Some quoted text\n')]
+        )
+
+    def test_quote_forward_1(self):
         self.assertEqual(
             quote(
 """Hello world.
@@ -32,6 +47,7 @@ Begin forwarded message:
              (False, '\n> From: Someone <someone@example.com>\n> Subject: The email\n>\n> Some quoted text.\n')]
         )
 
+    def test_quote_forward_2(self):
         self.assertEqual(
             quote(
 """Hello world.
@@ -288,6 +304,26 @@ Email text.
             'text': 'Email text.',
         })
 
+    def test_reply_1(self):
+        data = unwrap("""Hello world.
+
+On 2012-10-16 at 17:02 , Someone <someone@example.com> wrote:
+
+> Some quoted text
+""")
+        # TODO: parsing replies is not fully implemented
+        self.assertEqual(data['type'], 'reply')
+
+    def test_reply_2(self):
+        data = unwrap("""Hello world.
+
+On 2012-10-16 at 17:02 , Someone <
+someone@example.com> wrote:
+
+> Some quoted text
+""")
+        # TODO: parsing replies is not fully implemented
+        self.assertEqual(data['type'], 'reply')
 
 if __name__ == '__main__':
     unittest.main()

@@ -6,6 +6,9 @@ import re
 
 __all__ = ['quote']
 
+# Amount to lines to join to check for potential wrapped patterns.
+MAX_WRAP_LINES = 2
+
 REPLY_PATTERNS = [
     '^On .*wrote:$', # apple mail/gmail reply
     '^Am .*schrieb .*:$', # German
@@ -72,16 +75,17 @@ def quote(text, limit=1000):
 
     found = None
 
-    for n, line in enumerate(lines):
-        if found != None:
-            break
-        for regex in COMPILED_PATTERNS:
-            if regex.match(line.strip()):
-                found = n
-                break
-        if n == limit:
-            found = n
-            break
+    def _find():
+        for n in range(len(lines)):
+            for regex in COMPILED_PATTERNS:
+                for m in range(MAX_WRAP_LINES):
+                    match_line = ''.join(lines[n:n+1+m])
+                    if re.match(regex, match_line.strip()):
+                        return n+m
+            if n == limit:
+                return n
+
+    found = _find()
 
     if found != None:
         return [(True, '\n'.join(lines[:found+1])), (False, '\n'.join(lines[found+1:]))]
@@ -117,7 +121,7 @@ def unwrap(text):
         Find starting point of wrapped email. Returns a tuple containing
         (line_number, type) where type can be one of the following:
          * 'forward': A matching forwarding pattern was found
-         * 'reply': A matching repy pattern was found
+         * 'reply': A matching reply pattern was found
          * 'headers': Headers were found (usually a forwarded email)
          * 'quote': A quote was found
         Returns (None, None) if nothing was found.
@@ -136,8 +140,10 @@ def unwrap(text):
             # Find a forward / reply start pattern
             for typ, regexes in pattern_map.iteritems():
                 for regex in regexes:
-                    if re.match(regex, line.strip()):
-                        return n, typ
+                    for m in range(MAX_WRAP_LINES):
+                        match_line = ''.join(lines[n:n+1+m])
+                        if re.match(regex, match_line.strip()):
+                            return n+m, typ
 
             # Find a quote
             if line.startswith('>'):
