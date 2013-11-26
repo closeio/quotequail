@@ -181,20 +181,31 @@ def unwrap(text):
 
     def _extract_headers(lines):
         hdrs = {}
+        header_name = None
+
+        # Track overlong headers that extend over multiple lines
+        extend_lines = 0
+
         for n, line in enumerate(lines):
             if not line.strip():
+                header_name = None
                 continue
 
             match = header_re.match(line)
             if match:
                 header_name, header_value = match.groups()
                 header_name = header_name.strip().lower()
+                extend_lines = 0
 
                 if header_name in HEADER_MAP:
                     hdrs[HEADER_MAP[header_name]] = header_value.strip()
             else:
-                # no more headers found
-                break
+                extend_lines += 1
+                if extend_lines < MAX_WRAP_LINES and header_name in HEADER_MAP:
+                    hdrs[HEADER_MAP[header_name]] = ' '.join([hdrs[HEADER_MAP[header_name]], line.strip()]).strip()
+                else:
+                    # no more headers found
+                    break
 
         return hdrs, lines[n:]
 

@@ -304,6 +304,22 @@ Email text.
             'text': 'Email text.',
         })
 
+    def test_long_subject(self):
+        self.assertEqual(unwrap("""---------- Forwarded message ----------
+From: Someone <someone@example.com>
+Subject: The email has a very long and confusing subject with spans over
+multiple lines.
+To: Destination <to@example.com>
+
+Email text.
+"""), {
+            'type': 'forward',
+            'from': 'Someone <someone@example.com>',
+            'to': 'Destination <to@example.com>',
+            'subject': 'The email has a very long and confusing subject with spans over multiple lines.',
+            'text': 'Email text.',
+        })
+
     def test_reply_1(self):
         data = unwrap("""Hello world.
 
