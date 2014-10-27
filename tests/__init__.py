@@ -385,6 +385,7 @@ someone@example.com> wrote:
     def test_french(self):
         self.assertEqual(unwrap(u"""
 De : Someone <someone@example.com>
+Répondre à : Reply <reply@example.com>
 Date : Wednesday, 17 September 2014 4:24 pm
 À : "Someone Else" <else@example.com>
 Objet : Re: test subject
@@ -394,6 +395,7 @@ Hello, thanks for your reply
             'type': 'forward',
             'date': u'Wednesday, 17 September 2014 4:24 pm',
             'from': u'Someone <someone@example.com>',
+            'reply-to': 'Reply <reply@example.com>',
             'to': u'"Someone Else" <else@example.com>',
             'subject': u'Re: test subject',
             'text': u'Hello, thanks for your reply',
