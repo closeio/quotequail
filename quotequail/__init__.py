@@ -39,6 +39,7 @@ HEADER_MAP = {
     'to': 'to',
     'an': 'to',
     'para': 'to',
+    u'à': 'to',
 
     'cc': 'cc',
     'kopie': 'cc',
@@ -58,6 +59,7 @@ HEADER_MAP = {
     'subject': 'subject',
     'betreff': 'subject',
     'asunto': 'subject',
+    'objet': 'subject',
 }
 
 COMPILED_PATTERNS = [re.compile(regex) for regex in REPLY_PATTERNS + FORWARD_PATTERNS ]
@@ -111,7 +113,7 @@ def unwrap(text):
 
     lines = text.split('\n')
 
-    header_re = re.compile(r'\*?([a-zA-Z- ]+):\*?(.*)$')
+    header_re = re.compile(r'\*?([-\w ]+):\*?(.*)$', re.UNICODE)
 
     pattern_map = {
         'reply': REPLY_PATTERNS,

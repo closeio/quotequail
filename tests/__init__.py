@@ -382,6 +382,23 @@ someone@example.com> wrote:
         # TODO: parsing replies is not fully implemented
         self.assertEqual(data['type'], 'reply')
 
+    def test_french(self):
+        self.assertEqual(unwrap(u"""
+De : Someone <someone@example.com>
+Date : Wednesday, 17 September 2014 4:24 pm
+À : "Someone Else" <else@example.com>
+Objet : Re: test subject
+
+Hello, thanks for your reply
+        """), {
+            'type': 'forward',
+            'date': u'Wednesday, 17 September 2014 4:24 pm',
+            'from': u'Someone <someone@example.com>',
+            'to': u'"Someone Else" <else@example.com>',
+            'subject': u'Re: test subject',
+            'text': u'Hello, thanks for your reply',
+        })
+
 if __name__ == '__main__':
     unittest.main()
 
