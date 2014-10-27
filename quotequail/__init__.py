@@ -80,6 +80,8 @@ def quote(text, limit=1000):
             for regex in COMPILED_PATTERNS:
                 for m in range(MAX_WRAP_LINES):
                     match_line = ''.join(lines[n:n+1+m])
+                    if match_line.startswith('>'):
+                        match_line = match_line[1:].strip()
                     if re.match(regex, match_line.strip()):
                         return n+m
             if n == limit:
@@ -142,6 +144,8 @@ def unwrap(text):
                 for regex in regexes:
                     for m in range(MAX_WRAP_LINES):
                         match_line = ''.join(lines[n:n+1+m])
+                        if match_line.startswith('>'):
+                            match_line = match_line[1:].strip()
                         if re.match(regex, match_line.strip()):
                             return n+m, typ
 

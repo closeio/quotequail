@@ -62,6 +62,22 @@ Some quoted text.
              (False, 'From: Someone <someone@example.com>\nSubject: The email\n\nSome quoted text.\n')]
         )
 
+    def test_quote_forward_3(self):
+        self.assertEqual(
+            quote(
+"""Hello world.
+
+> Begin forwarded message:
+>
+> From: Someone <someone@example.com>
+> Subject: The email
+>
+> Some quoted text.
+"""),
+            [(True, 'Hello world.\n\n> Begin forwarded message:'),
+             (False, '>\n> From: Someone <someone@example.com>\n> Subject: The email\n>\n> Some quoted text.\n')]
+        )
+
 
 class UnwrapTestCase(unittest.TestCase):
     # TODO: Test this function with replies
@@ -89,11 +105,36 @@ Learn Spanish
         })
 
     def test_apple_forward(self):
-        # Apple Mail forward
+        # Apple Mail (10.9 and earlier) forward
         self.assertEqual(unwrap("""Hello
 
 Begin forwarded message:
 
+> From: "Some One" <some.one@example.com>
+> Date: 1. August 2011 23:28:15 GMT-07:00
+> To: "Other Person" <other@example.com>
+> Subject: AW: AW: Some subject
+> 
+> Original text
+
+Text bottom
+"""), {
+            'text_top': 'Hello',
+            'type': 'forward',
+            'from': '"Some One" <some.one@example.com>',
+            'date': '1. August 2011 23:28:15 GMT-07:00',
+            'subject': 'AW: AW: Some subject',
+            'to': '"Other Person" <other@example.com>',
+            'text': 'Original text',
+            'text_bottom': 'Text bottom',
+        })
+
+    def test_apple_forward_2(self):
+        # Apple Mail (10.10) forward
+        self.assertEqual(unwrap("""Hello
+
+> Begin forwarded message:
+>
 > From: "Some One" <some.one@example.com>
 > Date: 1. August 2011 23:28:15 GMT-07:00
 > To: "Other Person" <other@example.com>
