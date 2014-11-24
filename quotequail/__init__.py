@@ -97,6 +97,89 @@ def quote(text, limit=1000):
 
     return [(True, text)]
 
+def quote_html(html, limit=10000):
+    from BeautifulSoup import BeautifulSoup, Tag
+    INLINE_TAGS = ('a', 'b', 'em', 'i', 'strong') + \
+                  BeautifulSoup.NESTABLE_INLINE_TAGS
+
+    def _get_inline_texts(root):
+        """
+        For a given tag, returns a list of text content by including inline
+        tags. E.g. '<a>x@y.com</a> wrote: <div>anything</div> more text' will
+        return ['x@y.com wrote: ', ' more text']
+        """
+        texts = []
+        text = u''
+        for el in root.contents:
+            if isinstance(el, Tag):
+                if el.name.lower() in INLINE_TAGS:
+                    text += el.text
+                else:
+                    if text:
+                        texts.append((el, text))
+                        text = u''
+            else:
+                text += unicode(el)
+        
+        if text:
+            texts.append((el, text))
+
+        # TODO find nicer way to do this
+        texts = [(el, text.replace('&lt;', '<').replace('&gt;', '>').replace('&amp;', '&')) for el, text in texts]
+
+        return texts
+
+    def _insert_quotequail_divider():
+        """
+        Inserts a quotequail divider div if a pattern is found and returns the
+        parent element chain. Returns None if no pattern was found.
+        """
+        for el in soup.findAll():
+            for text_el, text in _get_inline_texts(el):
+                for regex in COMPILED_PATTERNS:
+                    if re.match(regex, text.strip()):
+                        # Insert quotequail divider *after* text_el
+                        idx = 0
+                        for sub_el in el.contents:
+                            idx += 1
+                            if sub_el == text_el:
+                                break
+                        quail_el = Tag(soup, 'div', {'class': 'quotequail-divider'})
+                        el.insert(idx, quail_el)
+
+                        parent_chain = []
+                        for parent_el in quail_el.parentGenerator():
+                            if not parent_el or parent_el.name == BeautifulSoup.ROOT_TAG_NAME:
+                                break
+                            parent_chain.append(parent_el)
+                        return parent_chain
+
+    soup = BeautifulSoup(html, convertEntities='html')
+    parent_chain = _insert_quotequail_divider() or []
+
+    rendered_soup = unicode(soup)
+    parts = rendered_soup.split('<div class="quotequail-divider"></div>')
+    if len(parts) == 1:
+        return [(True, rendered_soup)]
+    else:
+        open_sequence = ''
+        close_sequence = ''
+        for parent_el in parent_chain:
+            parent_el.clear()
+            parent_el.isSelfClosing = False
+
+            # TODO: nicer re split?
+            open_str, close_str = unicode(parent_el).split('><')
+            open_str = '%s>' % open_str
+            close_str = '<%s' % close_str
+
+            close_sequence += close_str
+            open_sequence = open_str + open_sequence
+
+        return [
+            (True, parts[0]+close_sequence),
+            (False, open_sequence+parts[1]),
+        ]
 
 """
 If the passed text is the text body of a forwarded message, a dictionary with the following keys is returned:

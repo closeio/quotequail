@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-from quotequail import quote, unwrap
+from quotequail import quote, quote_html, unwrap
 
 class QuoteTestCase(unittest.TestCase):
     def test_quote_reply_1(self):
@@ -78,6 +78,30 @@ Some quoted text.
              (False, '>\n> From: Someone <someone@example.com>\n> Subject: The email\n>\n> Some quoted text.\n')]
         )
 
+class HTMLQuoteTestCase(unittest.TestCase):
+    # Note that BeautifulSoup uses XHTML-style tag closing (which is why <br>
+    # becomes <br /> etc.
+    def test_apple(self):
+        self.assertEqual(
+            quote_html('''<html><head><meta http-equiv="Content-Type" content="text/html charset=us-ascii"></head><body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;" class="">Some text<div class=""><br class=""></div><div class="">some more text</div><div class=""><br class=""></div><div class=""><br class=""><div><blockquote type="cite" class=""><div class="">On Nov 12, 2014, at 11:07 PM, Some One &lt;<a href="mailto:someone@example.com" class="">someone@example.com</a>&gt; wrote:</div><br class="Apple-interchange-newline"><div class=""><meta http-equiv="Content-Type" content="text/html charset=us-ascii" class=""><div style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;" class="">Lorem ipsum dolor sit amet.<div class=""><br class=""></div></div></div></blockquote></div><br class=""></div></body></html>'''),
+            [
+                (True, '''<html><head><meta http-equiv="Content-Type" content="text/html charset=us-ascii" /></head><body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;" class="">Some text<div class=""><br class="" /></div><div class="">some more text</div><div class=""><br class="" /></div><div class=""><br class="" /><div><blockquote type="cite" class=""><div class="">On Nov 12, 2014, at 11:07 PM, Some One &lt;<a href="mailto:someone@example.com" class="">someone@example.com</a>&gt; wrote:</div></blockquote></div></div></body></html>'''),
+                (False, '''<html><body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;" class=""><div class=""><div><blockquote type="cite" class=""><div class=""></div><br class="Apple-interchange-newline" /><div class=""><meta http-equiv="Content-Type" content="text/html charset=us-ascii" class="" /><div style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;" class="">Lorem ipsum dolor sit amet.<div class=""><br class="" /></div></div></div></blockquote></div><br class="" /></div></body></html>'''),
+            ]
+        )
+
+    def test_gmail(self):
+        self.assertEqual(
+            quote_html('''<div dir="ltr"><br><div class="gmail_quote">---------- Forwarded message ----------<br>From: <b class="gmail_sendername">Some One</b> <span dir="ltr">&lt;<a href="mailto:someone@example.com">someone@example.com</a>&gt;</span>
+</div><br><br clear="all"><div><br></div>-- <br><div class="gmail_signature"><div>Some One</div></div>
+</div>'''),
+            [
+                (True, '''<div dir="ltr"><br /><div class="gmail_quote">---------- Forwarded message ----------<br /></div></div>'''),
+                (False, '''<div dir="ltr"><div class="gmail_quote">From: <b class="gmail_sendername">Some One</b> <span dir="ltr">&lt;<a href="mailto:someone@example.com">someone@example.com</a>&gt;</span>
+</div><br /><br clear="all" /><div><br /></div>-- <br /><div class="gmail_signature"><div>Some One</div></div>
+</div>'''),
+            ]
+        )
 
 class UnwrapTestCase(unittest.TestCase):
     # TODO: Test this function with replies
