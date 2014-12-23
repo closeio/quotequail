@@ -96,10 +96,19 @@ class HTMLQuoteTestCase(unittest.TestCase):
 </div><br><br clear="all"><div><br></div>-- <br><div class="gmail_signature"><div>Some One</div></div>
 </div>'''),
             [
-                (True, '''<div dir="ltr"><br /><div class="gmail_quote">---------- Forwarded message ----------<br /></div></div>'''),
-                (False, '''<div dir="ltr"><div class="gmail_quote">From: <b class="gmail_sendername">Some One</b> <span dir="ltr">&lt;<a href="mailto:someone@example.com">someone@example.com</a>&gt;</span>
+                (True, '''<div dir="ltr"><br /><div class="gmail_quote">---------- Forwarded message ----------</div></div>'''),
+                (False, '''<div dir="ltr"><div class="gmail_quote"><br />From: <b class="gmail_sendername">Some One</b> <span dir="ltr">&lt;<a href="mailto:someone@example.com">someone@example.com</a>&gt;</span>
 </div><br /><br clear="all" /><div><br /></div>-- <br /><div class="gmail_signature"><div>Some One</div></div>
 </div>'''),
+            ]
+        )
+
+    def test_gmail_2(self):
+        self.assertEqual(
+            quote_html(u'''<div dir="ltr">looks good\xa0</div><div class="gmail_extra"><br><div class="gmail_quote">On Thu, Dec 18, 2014 at 10:02 AM, foo <span dir="ltr">&lt;<a href="mailto:foo@example.com" target="_blank">foo@example.com</a>&gt;</span> wrote:<blockquote class="gmail_quote" style="margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex"><div dir="ltr">Hey Phil,\xa0<div><br><div>Sending you the report:\xa0</div></div><div><span class="HOEnZb"><font color="#888888"><br></font></span></div><span class="HOEnZb"><font color="#888888"><div><br></div><div class="gmail_extra">-- <br><div><div dir="ltr"><div>Cheers,</div><div>foo &amp; example Team</div><div><a href="http://www.example.com" target="_blank">www.example.com</a> ; - <a href="mailto:help@example.com" target="_blank">help@example.com</a>\xa0</div></div></div>\r\n</div></font></span></div>\r\n</blockquote></div></div>\r\n'''),
+            [
+                (True, u'''<div dir="ltr">looks good\xa0</div><div class="gmail_extra"><br /><div class="gmail_quote">On Thu, Dec 18, 2014 at 10:02 AM, foo <span dir="ltr">&lt;<a href="mailto:foo@example.com" target="_blank">foo@example.com</a>&gt;</span> wrote:</div></div>'''),
+                (False, u'''<div class="gmail_extra"><div class="gmail_quote"><blockquote class="gmail_quote" style="margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex"><div dir="ltr">Hey Phil,\xa0<div><br /><div>Sending you the report:\xa0</div></div><div><span class="HOEnZb"><font color="#888888"><br /></font></span></div><span class="HOEnZb"><font color="#888888"><div><br /></div><div class="gmail_extra">-- <br /><div><div dir="ltr"><div>Cheers,</div><div>foo &amp; example Team</div><div><a href="http://www.example.com" target="_blank">www.example.com</a> ; - <a href="mailto:help@example.com" target="_blank">help@example.com</a>\xa0</div></div></div>\n</div></font></span></div>\n</blockquote></div></div>\n'''),
             ]
         )
 

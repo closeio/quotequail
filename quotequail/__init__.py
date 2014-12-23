@@ -4,7 +4,7 @@
 
 import re
 
-__all__ = ['quote']
+__all__ = ['quote', 'quote_html']
 
 # Amount to lines to join to check for potential wrapped patterns.
 MAX_WRAP_LINES = 2
@@ -110,16 +110,19 @@ def quote_html(html, limit=10000):
         """
         texts = []
         text = u''
+        prev_el = None
         for el in root.contents:
             if isinstance(el, Tag):
                 if el.name.lower() in INLINE_TAGS:
                     text += el.text
                 else:
                     if text:
-                        texts.append((el, text))
+                        texts.append((prev_el, text))
                         text = u''
             else:
                 text += unicode(el)
+
+            prev_el = el
         
         if text:
             texts.append((el, text))
