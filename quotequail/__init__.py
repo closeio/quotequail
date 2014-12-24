@@ -123,7 +123,7 @@ def quote_html(html, limit=10000):
                 text += unicode(el)
 
             prev_el = el
-        
+
         if text:
             texts.append((el, text))
 

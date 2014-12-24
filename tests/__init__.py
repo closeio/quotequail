@@ -112,6 +112,15 @@ class HTMLQuoteTestCase(unittest.TestCase):
             ]
         )
 
+    def test_images(self):
+        self.assertEqual(
+            quote_html('''<div>Well hello there Sir!!!<br><br><br>On Dec 23, 2014, at 04:35 PM, Steve Wiseman &lt;wiseman.steve@ymail.com&gt; wrote:<br><blockquote type=\"cite\"><div style=\"color:#000;\"><div dir=\"ltr\">Hi there&nbsp;<img src=\"https://s.yimg.com/ok/u/assets/img/emoticons/emo14.gif\" alt=\"*B-) cool\" title=\"*B-) cool\" class=\"fr-fin\"><img src=\"https://s.yimg.com/ok/u/assets/img/emoticons/emo7.gif\" alt=\"*:P tongue\" title=\"*:P tongue\" class=\"fr-fin\"><img src=\"https://s.yimg.com/ok/u/assets/img/emoticons/emo72.gif\" alt=\"*:->~~ spooky\" title=\"*:->~~ spooky\" class=\"fr-fin\"></div></div></blockquote></div>'''),
+            [
+                (True, '''<div>Well hello there Sir!!!<br /><br /><br />On Dec 23, 2014, at 04:35 PM, Steve Wiseman &lt;wiseman.steve@ymail.com&gt; wrote:</div>'''),
+                (False, '''<div><br /><blockquote type="cite"><div style="color:#000;"><div dir="ltr">Hi there&nbsp;<img src=\"https://s.yimg.com/ok/u/assets/img/emoticons/emo14.gif\" alt=\"*B-) cool\" title=\"*B-) cool\" class=\"fr-fin\"><img src=\"https://s.yimg.com/ok/u/assets/img/emoticons/emo7.gif\" alt=\"*:P tongue\" title=\"*:P tongue\" class=\"fr-fin\"><img src=\"https://s.yimg.com/ok/u/assets/img/emoticons/emo72.gif\" alt=\"*:->~~ spooky\" title=\"*:->~~ spooky\" class=\"fr-fin\"></div></div></blockquote></div>''')
+            ]
+        )
+
 class UnwrapTestCase(unittest.TestCase):
     # TODO: Test this function with replies
 
@@ -147,7 +156,7 @@ Begin forwarded message:
 > Date: 1. August 2011 23:28:15 GMT-07:00
 > To: "Other Person" <other@example.com>
 > Subject: AW: AW: Some subject
-> 
+>
 > Original text
 
 Text bottom
@@ -172,7 +181,7 @@ Text bottom
 > Date: 1. August 2011 23:28:15 GMT-07:00
 > To: "Other Person" <other@example.com>
 > Subject: AW: AW: Some subject
-> 
+>
 > Original text
 
 Text bottom
@@ -303,7 +312,7 @@ OHAI"""), {
 -----Original Message-----
 From: "Some One" <some.one@example.com>
 
-Date: Sat, 22 Mar 2008 12:16:06 
+Date: Sat, 22 Mar 2008 12:16:06
 To:<to@example.com>
 
 
