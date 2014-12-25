@@ -79,14 +79,15 @@ Some quoted text.
         )
 
 class HTMLQuoteTestCase(unittest.TestCase):
-    # Note that BeautifulSoup uses XHTML-style tag closing (which is why <br>
-    # becomes <br /> etc.
     def test_apple(self):
         self.assertEqual(
             quote_html('''<html><head><meta http-equiv="Content-Type" content="text/html charset=us-ascii"></head><body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;" class="">Some text<div class=""><br class=""></div><div class="">some more text</div><div class=""><br class=""></div><div class=""><br class=""><div><blockquote type="cite" class=""><div class="">On Nov 12, 2014, at 11:07 PM, Some One &lt;<a href="mailto:someone@example.com" class="">someone@example.com</a>&gt; wrote:</div><br class="Apple-interchange-newline"><div class=""><meta http-equiv="Content-Type" content="text/html charset=us-ascii" class=""><div style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;" class="">Lorem ipsum dolor sit amet.<div class=""><br class=""></div></div></div></blockquote></div><br class=""></div></body></html>'''),
             [
-                (True, '''<html><head><meta http-equiv="Content-Type" content="text/html charset=us-ascii" /></head><body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;" class="">Some text<div class=""><br class="" /></div><div class="">some more text</div><div class=""><br class="" /></div><div class=""><br class="" /><div><blockquote type="cite" class=""><div class="">On Nov 12, 2014, at 11:07 PM, Some One &lt;<a href="mailto:someone@example.com" class="">someone@example.com</a>&gt; wrote:</div></blockquote></div></div></body></html>'''),
-                (False, '''<html><body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;" class=""><div class=""><div><blockquote type="cite" class=""><div class=""></div><br class="Apple-interchange-newline" /><div class=""><meta http-equiv="Content-Type" content="text/html charset=us-ascii" class="" /><div style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;" class="">Lorem ipsum dolor sit amet.<div class=""><br class="" /></div></div></div></blockquote></div><br class="" /></div></body></html>'''),
+                # Note that lxml removes Content-Type meta tags (see
+                # lxml.html.tostring include_meta_content_type flag)
+                (True, '''<html><head></head><body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;" class="">Some text<div class=""><br class=""></div><div class="">some more text</div><div class=""><br class=""></div><div class=""><br class=""><div><blockquote type="cite" class=""><div class="">On Nov 12, 2014, at 11:07 PM, Some One &lt;<a href="mailto:someone@example.com" class="">someone@example.com</a>&gt; wrote:</div></blockquote></div></div></body></html>'''),
+                # Note we have an empty div stripped out here.
+                (False, '''<html><body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;" class=""><div class=""><div><blockquote type="cite" class=""><br class="Apple-interchange-newline"><div class=""><div style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;" class="">Lorem ipsum dolor sit amet.<div class=""><br class=""></div></div></div></blockquote></div><br class=""></div></body></html>'''),
             ]
         )
 
@@ -96,9 +97,9 @@ class HTMLQuoteTestCase(unittest.TestCase):
 </div><br><br clear="all"><div><br></div>-- <br><div class="gmail_signature"><div>Some One</div></div>
 </div>'''),
             [
-                (True, '''<div dir="ltr"><br /><div class="gmail_quote">---------- Forwarded message ----------</div></div>'''),
-                (False, '''<div dir="ltr"><div class="gmail_quote"><br />From: <b class="gmail_sendername">Some One</b> <span dir="ltr">&lt;<a href="mailto:someone@example.com">someone@example.com</a>&gt;</span>
-</div><br /><br clear="all" /><div><br /></div>-- <br /><div class="gmail_signature"><div>Some One</div></div>
+                (True, '''<div dir="ltr"><br><div class="gmail_quote">---------- Forwarded message ----------</div></div>'''),
+                (False, '''<div dir="ltr"><div class="gmail_quote"><br>From: <b class="gmail_sendername">Some One</b> <span dir="ltr">&lt;<a href="mailto:someone@example.com">someone@example.com</a>&gt;</span>
+</div><br><br clear="all"><div><br></div>-- <br><div class="gmail_signature"><div>Some One</div></div>
 </div>'''),
             ]
         )
@@ -107,8 +108,8 @@ class HTMLQuoteTestCase(unittest.TestCase):
         self.assertEqual(
             quote_html(u'''<div dir="ltr">looks good\xa0</div><div class="gmail_extra"><br><div class="gmail_quote">On Thu, Dec 18, 2014 at 10:02 AM, foo <span dir="ltr">&lt;<a href="mailto:foo@example.com" target="_blank">foo@example.com</a>&gt;</span> wrote:<blockquote class="gmail_quote" style="margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex"><div dir="ltr">Hey Phil,\xa0<div><br><div>Sending you the report:\xa0</div></div><div><span class="HOEnZb"><font color="#888888"><br></font></span></div><span class="HOEnZb"><font color="#888888"><div><br></div><div class="gmail_extra">-- <br><div><div dir="ltr"><div>Cheers,</div><div>foo &amp; example Team</div><div><a href="http://www.example.com" target="_blank">www.example.com</a> ; - <a href="mailto:help@example.com" target="_blank">help@example.com</a>\xa0</div></div></div>\r\n</div></font></span></div>\r\n</blockquote></div></div>\r\n'''),
             [
-                (True, u'''<div dir="ltr">looks good\xa0</div><div class="gmail_extra"><br /><div class="gmail_quote">On Thu, Dec 18, 2014 at 10:02 AM, foo <span dir="ltr">&lt;<a href="mailto:foo@example.com" target="_blank">foo@example.com</a>&gt;</span> wrote:</div></div>'''),
-                (False, u'''<div class="gmail_extra"><div class="gmail_quote"><blockquote class="gmail_quote" style="margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex"><div dir="ltr">Hey Phil,\xa0<div><br /><div>Sending you the report:\xa0</div></div><div><span class="HOEnZb"><font color="#888888"><br /></font></span></div><span class="HOEnZb"><font color="#888888"><div><br /></div><div class="gmail_extra">-- <br /><div><div dir="ltr"><div>Cheers,</div><div>foo &amp; example Team</div><div><a href="http://www.example.com" target="_blank">www.example.com</a> ; - <a href="mailto:help@example.com" target="_blank">help@example.com</a>\xa0</div></div></div>\n</div></font></span></div>\n</blockquote></div></div>\n'''),
+                (True, u'''<div dir="ltr">looks good&#160;</div><div class="gmail_extra"><br><div class="gmail_quote">On Thu, Dec 18, 2014 at 10:02 AM, foo <span dir="ltr">&lt;<a href="mailto:foo@example.com" target="_blank">foo@example.com</a>&gt;</span> wrote:</div></div>'''),
+                (False, u'''<div class="gmail_extra"><div class="gmail_quote"><blockquote class="gmail_quote" style="margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex"><div dir="ltr">Hey Phil,&#160;<div><br><div>Sending you the report:&#160;</div></div><div><span class="HOEnZb"><font color="#888888"><br></font></span></div><span class="HOEnZb"><font color="#888888"><div><br></div><div class="gmail_extra">-- <br><div><div dir="ltr"><div>Cheers,</div><div>foo &amp; example Team</div><div><a href="http://www.example.com" target="_blank">www.example.com</a> ; - <a href="mailto:help@example.com" target="_blank">help@example.com</a>&#160;</div></div></div>\r\n</div></font></span></div>\r\n</blockquote></div></div>\r\n'''),
             ]
         )
 
@@ -125,8 +126,8 @@ class HTMLQuoteTestCase(unittest.TestCase):
         self.assertEqual(
             quote_html('''<div>Well hello there Sir!!!<br><br><br>On Dec 23, 2014, at 04:35 PM, Steve Wiseman &lt;wiseman.steve@ymail.com&gt; wrote:<br><blockquote type=\"cite\"><div style=\"color:#000;\"><div dir=\"ltr\">Hi there&nbsp;<img src=\"https://s.yimg.com/ok/u/assets/img/emoticons/emo14.gif\" alt=\"*B-) cool\" title=\"*B-) cool\" class=\"fr-fin\"><img src=\"https://s.yimg.com/ok/u/assets/img/emoticons/emo7.gif\" alt=\"*:P tongue\" title=\"*:P tongue\" class=\"fr-fin\"><img src=\"https://s.yimg.com/ok/u/assets/img/emoticons/emo72.gif\" alt=\"*:->~~ spooky\" title=\"*:->~~ spooky\" class=\"fr-fin\"></div></div></blockquote></div>'''),
             [
-                (True, '''<div>Well hello there Sir!!!<br /><br /><br />On Dec 23, 2014, at 04:35 PM, Steve Wiseman &lt;wiseman.steve@ymail.com&gt; wrote:</div>'''),
-                (False, '''<div><br /><blockquote type="cite"><div style="color:#000;"><div dir="ltr">Hi there&nbsp;<img src=\"https://s.yimg.com/ok/u/assets/img/emoticons/emo14.gif\" alt=\"*B-) cool\" title=\"*B-) cool\" class=\"fr-fin\"><img src=\"https://s.yimg.com/ok/u/assets/img/emoticons/emo7.gif\" alt=\"*:P tongue\" title=\"*:P tongue\" class=\"fr-fin\"><img src=\"https://s.yimg.com/ok/u/assets/img/emoticons/emo72.gif\" alt=\"*:->~~ spooky\" title=\"*:->~~ spooky\" class=\"fr-fin\"></div></div></blockquote></div>''')
+                (True, u'''<div>Well hello there Sir!!!<br><br><br>On Dec 23, 2014, at 04:35 PM, Steve Wiseman &lt;wiseman.steve@ymail.com&gt; wrote:</div>'''),
+                (False, u'''<div><br><blockquote type="cite"><div style="color:#000;"><div dir="ltr">Hi there&#160;<img src=\"https://s.yimg.com/ok/u/assets/img/emoticons/emo14.gif\" alt=\"*B-) cool\" title=\"*B-) cool\" class=\"fr-fin\"><img src=\"https://s.yimg.com/ok/u/assets/img/emoticons/emo7.gif\" alt=\"*:P tongue\" title=\"*:P tongue\" class=\"fr-fin\"><img src=\"https://s.yimg.com/ok/u/assets/img/emoticons/emo72.gif\" alt=\"*:-&gt;~~ spooky\" title=\"*:-&gt;~~ spooky\" class=\"fr-fin\"></div></div></blockquote></div>''')
             ]
         )
 

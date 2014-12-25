@@ -98,37 +98,42 @@ def quote(text, limit=1000):
     return [(True, text)]
 
 def quote_html(html, limit=10000):
-    from BeautifulSoup import BeautifulSoup, Tag
-    INLINE_TAGS = ('a', 'b', 'em', 'i', 'strong') + \
-                  BeautifulSoup.NESTABLE_INLINE_TAGS
+    import lxml.html
+    INLINE_TAGS = ['a', 'b', 'em', 'i', 'strong', 'span', 'font', 'q',
+                   'object', 'bdo', 'sub', 'sup', 'center']
 
     def _get_inline_texts(root):
         """
         For a given tag, returns a list of text content by including inline
-        tags. E.g. '<a>x@y.com</a> wrote: <div>anything</div> more text' will
-        return ['x@y.com wrote: ', ' more text']
+        tags (and the corresponding insertion index at the end of the text).
+        E.g. '<a>x@y.com</a> wrote: <div>anything</div> more text' will
+        return [(1, 'x@y.com wrote: '), (3, ' more text')]
         """
         texts = []
-        text = u''
-        prev_el = None
-        for el in root.contents:
-            if isinstance(el, Tag):
-                if el.name.lower() in INLINE_TAGS:
-                    text += el.text
-                else:
-                    if text:
-                        texts.append((prev_el, text))
-                        text = u''
+        # Text at the beginning of the element which preceeds any other text
+        # e.g. '<div>A<a>B</a>C</div>' will return 'A'
+        text = root.text or u''
+        idx = 0
+        for el in root:
+            if el.tag.lower() in INLINE_TAGS:
+                # For inline tags, append their text content and tail
+                # E.g. '<a>B</a>C' will return 'BC'
+                text += el.text_content()
+                if el.tail:
+                    text += el.tail
             else:
-                text += unicode(el)
+                if text:
+                    texts.append((idx, text))
+                    text = u''
+                # For other tags, just use their tail.
+                # E.g. '<div>D</div>E' will return 'E'
+                if el.tail:
+                    text += el.tail
 
-            prev_el = el
+            idx += 1
 
         if text:
-            texts.append((el, text))
-
-        # TODO find nicer way to do this
-        texts = [(el, text.replace('&lt;', '<').replace('&gt;', '>').replace('&amp;', '&')) for el, text in texts]
+            texts.append((idx, text))
 
         return texts
 
@@ -137,51 +142,66 @@ def quote_html(html, limit=10000):
         Inserts a quotequail divider div if a pattern is found and returns the
         parent element chain. Returns None if no pattern was found.
         """
-        for el in soup.findAll():
-            for text_el, text in _get_inline_texts(el):
+        for el in tree.iter():
+            for text_idx, text in _get_inline_texts(el):
                 for regex in COMPILED_PATTERNS:
                     if re.match(regex, text.strip()):
-                        # Insert quotequail divider *after* text_el
-                        idx = 0
-                        for sub_el in el.contents:
-                            idx += 1
-                            if sub_el == text_el:
-                                break
-                        quail_el = Tag(soup, 'div', {'class': 'quotequail-divider'})
-                        el.insert(idx, quail_el)
+                        # Insert quotequail divider *after* the text.
+
+                        quail_el = lxml.html.Element('div', **{'class': 'quotequail-divider'})
+
+                        # If the index is past the last element, insert it
+                        # after the parent element to prevent an orphan tag.
+                        # For example, '<p>X wrote:</p><div>text</div>' is
+                        # divided into '<p>X wrote:</p>' and '<div>text</div>',
+                        # and not '<p>X wrote:</p>' and '<p></p><div>text</div>'
+                        if text_idx == len(el):
+                            el.addnext(quail_el)
+                            el = el.getparent()
+                        else:
+                            el.insert(text_idx, quail_el)
 
                         parent_chain = []
-                        for parent_el in quail_el.parentGenerator():
-                            if not parent_el or parent_el.name == BeautifulSoup.ROOT_TAG_NAME:
-                                break
+                        for parent_el in quail_el.iterancestors():
                             parent_chain.append(parent_el)
+                            if parent_el == tree:
+                                break
                         return parent_chain
 
-    soup = BeautifulSoup(html, convertEntities='html')
+    def _strip_wrapping(text):
+        if text.startswith('<div>') and text.endswith('</div>'):
+            text = text[5:-6]
+        return text
+
+    tree = lxml.html.fromstring(html)
+
+    # If the document doesn't start with a top level tag, wrap it with a <div>
+    # that will be later stripped out for consistent behavior.
+    if tree.tag not in lxml.html.defs.top_level_tags:
+        html = '<div>%s</div>' % html
+        tree = lxml.html.fromstring(html)
+
     parent_chain = _insert_quotequail_divider() or []
 
-    rendered_soup = unicode(soup)
-    parts = rendered_soup.split('<div class="quotequail-divider"></div>')
+    rendered_tree = lxml.html.tostring(tree)
+    parts = rendered_tree.split('<div class="quotequail-divider"></div>')
+
     if len(parts) == 1:
-        return [(True, rendered_soup)]
+        return [(True, _strip_wrapping(rendered_soup))]
     else:
-        open_sequence = ''
-        close_sequence = ''
-        for parent_el in parent_chain:
-            parent_el.clear()
-            parent_el.isSelfClosing = False
+        def render_attrs(el):
+            return ' '.join('%s="%s"' % (name, val)
+                    for name, val in el.attrib.items())
 
-            # TODO: nicer re split?
-            open_str, close_str = unicode(parent_el).split('><')
-            open_str = '%s>' % open_str
-            close_str = '<%s' % close_str
+        # Render open tags and attributes (but no content)
+        open_sequence = ''.join(['<%s%s%s>' % (el.tag, ' ' if el.attrib else '',
+            render_attrs(el)) for el in reversed(parent_chain)])
 
-            close_sequence += close_str
-            open_sequence = open_str + open_sequence
+        close_sequence = ''.join(['</%s>' % el.tag for el in parent_chain])
 
         return [
-            (True, parts[0]+close_sequence),
-            (False, open_sequence+parts[1]),
+            (True, _strip_wrapping(parts[0]+close_sequence)),
+            (False, _strip_wrapping(open_sequence+parts[1])),
         ]
 
 """
