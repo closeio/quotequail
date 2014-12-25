@@ -131,6 +131,23 @@ class HTMLQuoteTestCase(unittest.TestCase):
             ]
         )
 
+    def test_no_quote(self):
+        self.assertEqual(
+            quote_html(u'''<p>One</p><p>Two</p><p>Three</p>'''),
+            [
+                (True, '<p>One</p><p>Two</p><p>Three</p>'),
+            ]
+        )
+
+    def test_limit(self):
+        self.assertEqual(
+            quote_html(u'''<p>One</p><p>Two</p><p>Three</p><p>Four</p>''', limit=3),
+            [
+                (True, '<p>One</p><p>Two</p><p>Three</p>'),
+                (False, '<p>Four</p>'),
+            ]
+        )
+
 class UnwrapTestCase(unittest.TestCase):
     # TODO: Test this function with replies
 

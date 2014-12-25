@@ -142,14 +142,21 @@ def quote_html(html, limit=10000):
         Inserts a quotequail divider div if a pattern is found and returns the
         parent element chain. Returns None if no pattern was found.
         """
-        for el in tree.iter():
+        quail_el = lxml.html.Element('div', **{'class': 'quotequail-divider'})
+
+        def _get_parent_chain():
+            parent_chain = []
+            for parent_el in quail_el.iterancestors():
+                parent_chain.append(parent_el)
+                if parent_el == tree:
+                    break
+            return parent_chain
+
+        for n, el in enumerate(tree.iter()):
             for text_idx, text in _get_inline_texts(el):
                 for regex in COMPILED_PATTERNS:
                     if re.match(regex, text.strip()):
                         # Insert quotequail divider *after* the text.
-
-                        quail_el = lxml.html.Element('div', **{'class': 'quotequail-divider'})
-
                         # If the index is past the last element, insert it
                         # after the parent element to prevent an orphan tag.
                         # For example, '<p>X wrote:</p><div>text</div>' is
@@ -161,12 +168,11 @@ def quote_html(html, limit=10000):
                         else:
                             el.insert(text_idx, quail_el)
 
-                        parent_chain = []
-                        for parent_el in quail_el.iterancestors():
-                            parent_chain.append(parent_el)
-                            if parent_el == tree:
-                                break
-                        return parent_chain
+                        return _get_parent_chain()
+
+            if n == limit:
+                el.addnext(quail_el)
+                return _get_parent_chain()
 
     def _strip_wrapping(text):
         if text.startswith('<div>') and text.endswith('</div>'):
@@ -187,7 +193,7 @@ def quote_html(html, limit=10000):
     parts = rendered_tree.split('<div class="quotequail-divider"></div>')
 
     if len(parts) == 1:
-        return [(True, _strip_wrapping(rendered_soup))]
+        return [(True, _strip_wrapping(rendered_tree))]
     else:
         def render_attrs(el):
             return ' '.join('%s="%s"' % (name, val)
