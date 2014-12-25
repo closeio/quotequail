@@ -112,6 +112,15 @@ class HTMLQuoteTestCase(unittest.TestCase):
             ]
         )
 
+    def test_no_wrap_tag(self):
+        self.assertEqual(
+            quote_html(u'''On Thu, Dec 18, 2014 at 10:02 AM, foo &lt;foo@example.com&gt; wrote:<blockquote>some stuff</blockquote>'''),
+            [
+                (True, 'On Thu, Dec 18, 2014 at 10:02 AM, foo &lt;foo@example.com&gt; wrote:'),
+                (False, '<blockquote>some stuff</blockquote>'),
+            ]
+        )
+
     def test_images(self):
         self.assertEqual(
             quote_html('''<div>Well hello there Sir!!!<br><br><br>On Dec 23, 2014, at 04:35 PM, Steve Wiseman &lt;wiseman.steve@ymail.com&gt; wrote:<br><blockquote type=\"cite\"><div style=\"color:#000;\"><div dir=\"ltr\">Hi there&nbsp;<img src=\"https://s.yimg.com/ok/u/assets/img/emoticons/emo14.gif\" alt=\"*B-) cool\" title=\"*B-) cool\" class=\"fr-fin\"><img src=\"https://s.yimg.com/ok/u/assets/img/emoticons/emo7.gif\" alt=\"*:P tongue\" title=\"*:P tongue\" class=\"fr-fin\"><img src=\"https://s.yimg.com/ok/u/assets/img/emoticons/emo72.gif\" alt=\"*:->~~ spooky\" title=\"*:->~~ spooky\" class=\"fr-fin\"></div></div></blockquote></div>'''),
