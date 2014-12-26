@@ -65,15 +65,16 @@ HEADER_MAP = {
 
 COMPILED_PATTERNS = [re.compile(regex) for regex in REPLY_PATTERNS + FORWARD_PATTERNS ]
 
-"""
-Takes a plain text message as an argument, returns a list of tuples. The first
-argument of the tuple denotes whether the text should be expanded by default.
-E.g. [(True, 'expanded text'), (False, 'Some quoted text')]
-
-Unless the limit param is set to None, the text will automatically be quoted
-starting at the line where the limit is reached.
-"""
 def quote(text, limit=1000):
+    """
+    Takes a plain text message as an argument, returns a list of tuples. The
+    first argument of the tuple denotes whether the text should be expanded by
+    default. E.g. [(True, 'expanded text'), (False, 'Some quoted text')]
+
+    Unless the limit param is set to None, the text will automatically be quoted
+    starting at the line where the limit is reached.
+    """
+
     lines = text.split('\n')
 
     found = None
@@ -98,6 +99,11 @@ def quote(text, limit=1000):
     return [(True, text)]
 
 def quote_html(html, limit=10000):
+    """
+    Like quote(), but takes an HTML message as an argument. The limit param
+    represents the maximum number of tags to traverse until quoting the rest
+    of the markup.
+    """
     import lxml.html
     INLINE_TAGS = ['a', 'b', 'em', 'i', 'strong', 'span', 'font', 'q',
                    'object', 'bdo', 'sub', 'sup', 'center']
@@ -210,18 +216,21 @@ def quote_html(html, limit=10000):
             (False, _strip_wrapping(open_sequence+parts[1])),
         ]
 
-"""
-If the passed text is the text body of a forwarded message, a dictionary with the following keys is returned:
-- type: "reply", "forward" or "quote"
-- text_top: Text at the top of the passed message (if found)
-- text_bottom: Text at the bottom of the passed message (if found)
-- from / to / subject / cc / bcc / reply-to: Corresponding header of the forwarded message, if it exists. (if found)
-- text: Text of the forwarded message (if found)
-
-Otherwise, this function returns None.
-
-"""
 def unwrap(text):
+    """
+    If the passed text is the text body of a forwarded message, a dictionary
+    with the following keys is returned:
+
+    - type: "reply", "forward" or "quote"
+    - text_top: Text at the top of the passed message (if found)
+    - text_bottom: Text at the bottom of the passed message (if found)
+    - from / to / subject / cc / bcc / reply-to: Corresponding header of the
+      forwarded message, if it exists. (if found)
+    - text: Text of the forwarded message (if found)
+
+    Otherwise, this function returns None.
+    """
+
     result = {}
 
     lines = text.split('\n')
