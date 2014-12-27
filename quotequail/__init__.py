@@ -4,7 +4,7 @@
 
 import re
 
-__all__ = ['quote']
+__all__ = ['quote', 'quote_html']
 
 # Amount to lines to join to check for potential wrapped patterns.
 MAX_WRAP_LINES = 2
@@ -65,15 +65,16 @@ HEADER_MAP = {
 
 COMPILED_PATTERNS = [re.compile(regex) for regex in REPLY_PATTERNS + FORWARD_PATTERNS ]
 
-"""
-Takes a plain text message as an argument, returns a list of tuples. The first
-argument of the tuple denotes whether the text should be expanded by default.
-E.g. [(True, 'expanded text'), (False, 'Some quoted text')]
-
-Unless the limit param is set to None, the text will automatically be quoted
-starting at the line where the limit is reached.
-"""
 def quote(text, limit=1000):
+    """
+    Takes a plain text message as an argument, returns a list of tuples. The
+    first argument of the tuple denotes whether the text should be expanded by
+    default. E.g. [(True, 'expanded text'), (False, 'Some quoted text')]
+
+    Unless the limit param is set to None, the text will automatically be quoted
+    starting at the line where the limit is reached.
+    """
+
     lines = text.split('\n')
 
     found = None
@@ -97,19 +98,139 @@ def quote(text, limit=1000):
 
     return [(True, text)]
 
+def quote_html(html, limit=10000):
+    """
+    Like quote(), but takes an HTML message as an argument. The limit param
+    represents the maximum number of tags to traverse until quoting the rest
+    of the markup.
+    """
+    import lxml.html
+    INLINE_TAGS = ['a', 'b', 'em', 'i', 'strong', 'span', 'font', 'q',
+                   'object', 'bdo', 'sub', 'sup', 'center']
 
-"""
-If the passed text is the text body of a forwarded message, a dictionary with the following keys is returned:
-- type: "reply", "forward" or "quote"
-- text_top: Text at the top of the passed message (if found)
-- text_bottom: Text at the bottom of the passed message (if found)
-- from / to / subject / cc / bcc / reply-to: Corresponding header of the forwarded message, if it exists. (if found)
-- text: Text of the forwarded message (if found)
+    def _get_inline_texts(root):
+        """
+        For a given tag, returns a list of text content by including inline
+        tags (and the corresponding insertion index at the end of the text).
+        E.g. '<a>x@y.com</a> wrote: <div>anything</div> more text' will
+        return [(1, 'x@y.com wrote: '), (3, ' more text')]
+        """
+        texts = []
+        # Text at the beginning of the element which preceeds any other text
+        # e.g. '<div>A<a>B</a>C</div>' will return 'A'
+        text = root.text or u''
+        idx = 0
+        for el in root:
+            if el.tag.lower() in INLINE_TAGS:
+                # For inline tags, append their text content and tail
+                # E.g. '<a>B</a>C' will return 'BC'
+                text += el.text_content()
+                if el.tail:
+                    text += el.tail
+            else:
+                if text:
+                    texts.append((idx, text))
+                    text = u''
+                # For other tags, just use their tail.
+                # E.g. '<div>D</div>E' will return 'E'
+                if el.tail:
+                    text += el.tail
 
-Otherwise, this function returns None.
+            idx += 1
 
-"""
+        if text:
+            texts.append((idx, text))
+
+        return texts
+
+    def _insert_quotequail_divider():
+        """
+        Inserts a quotequail divider div if a pattern is found and returns the
+        parent element chain. Returns None if no pattern was found.
+        """
+        quail_el = lxml.html.Element('div', **{'class': 'quotequail-divider'})
+
+        def _get_parent_chain():
+            parent_chain = []
+            for parent_el in quail_el.iterancestors():
+                parent_chain.append(parent_el)
+                if parent_el == tree:
+                    break
+            return parent_chain
+
+        for n, el in enumerate(tree.iter()):
+            for text_idx, text in _get_inline_texts(el):
+                for regex in COMPILED_PATTERNS:
+                    if re.match(regex, text.strip()):
+                        # Insert quotequail divider *after* the text.
+                        # If the index is past the last element, insert it
+                        # after the parent element to prevent an orphan tag.
+                        # For example, '<p>X wrote:</p><div>text</div>' is
+                        # divided into '<p>X wrote:</p>' and '<div>text</div>',
+                        # and not '<p>X wrote:</p>' and '<p></p><div>text</div>'
+                        if text_idx == len(el):
+                            el.addnext(quail_el)
+                            el = el.getparent()
+                        else:
+                            el.insert(text_idx, quail_el)
+
+                        return _get_parent_chain()
+
+            if n == limit:
+                el.addnext(quail_el)
+                return _get_parent_chain()
+
+    def _strip_wrapping(text):
+        if text.startswith('<div>') and text.endswith('</div>'):
+            text = text[5:-6]
+        return text
+
+    tree = lxml.html.fromstring(html)
+
+    # If the document doesn't start with a top level tag, wrap it with a <div>
+    # that will be later stripped out for consistent behavior.
+    if tree.tag not in lxml.html.defs.top_level_tags:
+        html = '<div>%s</div>' % html
+        tree = lxml.html.fromstring(html)
+
+    parent_chain = _insert_quotequail_divider() or []
+
+    rendered_tree = lxml.html.tostring(tree)
+    parts = rendered_tree.split('<div class="quotequail-divider"></div>')
+
+    if len(parts) == 1:
+        return [(True, _strip_wrapping(rendered_tree))]
+    else:
+        def render_attrs(el):
+            return ' '.join('%s="%s"' % (name, val)
+                    for name, val in el.attrib.items())
+
+        # Render open tags and attributes (but no content)
+        open_sequence = ''.join(['<%s%s%s>' % (el.tag, ' ' if el.attrib else '',
+            render_attrs(el)) for el in reversed(parent_chain)])
+
+        close_sequence = ''.join(['</%s>' % el.tag for el in parent_chain])
+
+        return [
+            (True, _strip_wrapping(parts[0]+close_sequence)),
+            (False, _strip_wrapping(open_sequence+parts[1])),
+        ]
+
 def unwrap(text):
+    """
+    If the passed text is the text body of a forwarded message, a dictionary
+    with the following keys is returned:
+
+    - type: "reply", "forward" or "quote"
+    - text_top: Text at the top of the passed message (if found)
+    - text_bottom: Text at the bottom of the passed message (if found)
+    - from / to / subject / cc / bcc / reply-to: Corresponding header of the
+      forwarded message, if it exists. (if found)
+    - text: Text of the forwarded message (if found)
+
+    Otherwise, this function returns None.
+    """
+
     result = {}
 
     lines = text.split('\n')
