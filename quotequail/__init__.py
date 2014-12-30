@@ -121,7 +121,9 @@ def quote_html(html, limit=10000):
         text = root.text or u''
         idx = 0
         for el in root:
-            if el.tag.lower() in INLINE_TAGS:
+            # Need to check if it's a string because comments point to
+            # lxml.etree.Comment
+            if isinstance(el.tag, basestring) and el.tag.lower() in INLINE_TAGS:
                 # For inline tags, append their text content and tail
                 # E.g. '<a>B</a>C' will return 'BC'
                 text += el.text_content()
@@ -185,7 +187,11 @@ def quote_html(html, limit=10000):
             text = text[5:-6]
         return text
 
-    tree = lxml.html.fromstring(html)
+    try:
+        tree = lxml.html.fromstring(html)
+    except lxml.etree.Error:
+        # E.g. empty document. Use dummy <div>
+        tree = lxml.html.fromstring('<div></div>')
 
     # If the document doesn't start with a top level tag, wrap it with a <div>
     # that will be later stripped out for consistent behavior.

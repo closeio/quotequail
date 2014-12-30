@@ -148,6 +148,30 @@ class HTMLQuoteTestCase(unittest.TestCase):
             ]
         )
 
+    def test_empty(self):
+        self.assertEqual(
+            quote_html(u''),
+            [
+                (True, ''),
+            ]
+        )
+
+    def test_comment(self):
+        self.assertEqual(
+            quote_html(u'''<!-- test -->'''),
+            [
+                (True, '<!-- test -->'),
+            ]
+        )
+
+    def test_comment_2(self):
+        self.assertEqual(
+            quote_html(u'''A<!-- test -->B'''),
+            [
+                (True, 'A<!-- test -->B'),
+            ]
+        )
+
 class UnwrapTestCase(unittest.TestCase):
     # TODO: Test this function with replies
 
