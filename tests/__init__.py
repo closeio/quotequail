@@ -172,6 +172,32 @@ class HTMLQuoteTestCase(unittest.TestCase):
             ]
         )
 
+    def test_encoding(self):
+        # We assume everything is UTF-8
+        self.assertEqual(
+            quote_html(u'''<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+<title></title>
+</head>
+<body>
+test ä
+</body>
+</html>'''), [
+            (True, u'''<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+
+<title></title>
+</head>
+<body>
+test &#228;
+</body>
+</html>'''),
+        ])
+
+
 class UnwrapTestCase(unittest.TestCase):
     # TODO: Test this function with replies
 

@@ -187,8 +187,11 @@ def quote_html(html, limit=10000):
             text = text[5:-6]
         return text
 
+    parser = lxml.html.HTMLParser(encoding='utf-8')
+    html = html.encode('utf8')
+
     try:
-        tree = lxml.html.fromstring(html)
+        tree = lxml.html.fromstring(html, parser=parser)
     except lxml.etree.Error:
         # E.g. empty document. Use dummy <div>
         tree = lxml.html.fromstring('<div></div>')
@@ -197,7 +200,7 @@ def quote_html(html, limit=10000):
     # that will be later stripped out for consistent behavior.
     if tree.tag not in lxml.html.defs.top_level_tags:
         html = '<div>%s</div>' % html
-        tree = lxml.html.fromstring(html)
+        tree = lxml.html.fromstring(html, parser=parser)
 
     parent_chain = _insert_quotequail_divider() or []
 
