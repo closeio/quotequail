@@ -31,6 +31,11 @@ FORWARD_PATTERNS = [
 ] + ['^---+ ?%s ?---+$' % p for p in FORWARD_MESSAGES] \
   + ['^%s:$' % p for p in FORWARD_MESSAGES]
 
+FORWARD_STYLES = [
+    # Outlook
+    'border:none;border-top:solid #B5C4DF 1.0pt;padding:3.0pt 0in 0in 0in',
+]
+
 HEADER_MAP = {
     'from': 'from',
     'von': 'from',
@@ -161,22 +166,27 @@ def quote_html(html, limit=10000):
             return parent_chain
 
         for n, el in enumerate(tree.iter()):
-            for text_idx, text in _get_inline_texts(el):
-                for regex in COMPILED_PATTERNS:
-                    if re.match(regex, text.strip()):
-                        # Insert quotequail divider *after* the text.
-                        # If the index is past the last element, insert it
-                        # after the parent element to prevent an orphan tag.
-                        # For example, '<p>X wrote:</p><div>text</div>' is
-                        # divided into '<p>X wrote:</p>' and '<div>text</div>',
-                        # and not '<p>X wrote:</p>' and '<p></p><div>text</div>'
-                        if text_idx == len(el):
-                            el.addnext(quail_el)
-                            el = el.getparent()
-                        else:
-                            el.insert(text_idx, quail_el)
+            style = el.attrib.get('style')
+            if style in FORWARD_STYLES:
+                el.insert(0, quail_el)
+                return _get_parent_chain()
+            else:
+                for text_idx, text in _get_inline_texts(el):
+                    for regex in COMPILED_PATTERNS:
+                        if re.match(regex, text.strip()):
+                            # Insert quotequail divider *after* the text.
+                            # If the index is past the last element, insert it
+                            # after the parent element to prevent an orphan tag.
+                            # For example, '<p>X wrote:</p><div>text</div>' is
+                            # divided into '<p>X wrote:</p>' and '<div>text</div>',
+                            # and not '<p>X wrote:</p>' and '<p></p><div>text</div>'
+                            if text_idx == len(el):
+                                el.addnext(quail_el)
+                                el = el.getparent()
+                            else:
+                                el.insert(text_idx, quail_el)
 
-                        return _get_parent_chain()
+                            return _get_parent_chain()
 
             if n == limit:
                 el.addnext(quail_el)
