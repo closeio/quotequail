@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='quotequail',
-    version='0.1',
+    version='0.1.1',
     url='http://github.com/elasticsales/quotequail',
     license='MIT',
     author='Thomas Steinacher',
