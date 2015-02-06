@@ -283,7 +283,7 @@ def unwrap(text):
                 continue
 
             # Find a forward / reply start pattern
-            for typ, regexes in pattern_map.iteritems():
+            for typ, regexes in pattern_map.items():
                 for regex in regexes:
                     for m in range(MAX_WRAP_LINES):
                         match_line = ''.join(lines[n:n+1+m])
