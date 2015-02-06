@@ -15,6 +15,7 @@ setup(
         'quotequail',
     ],
     test_suite='tests',
+    tests_require=['lxml'],
     platforms='any',
     classifiers=[
         'Development Status :: 4 - Beta',
