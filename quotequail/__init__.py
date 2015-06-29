@@ -20,7 +20,7 @@ FORWARD_MESSAGES = [
     'Begin forwarded message', 'Anfang der weitergeleiteten E-Mail',
 
     # gmail/evolution forward
-    'Forwarded [mM]essage',
+    'Forwarded [mM]essage', 'Mensaje reenviado',
 
     # outlook
     'Original [mM]essage', 'Ursprüngliche Nachricht', 'Mensaje [oO]riginal',
