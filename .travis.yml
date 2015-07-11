@@ -1,4 +1,4 @@
-# http://travis-ci.org/elasticsales/quotequail
+# http://travis-ci.org/closeio/quotequail
 language: python
 python:
     - 2.7

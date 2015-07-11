@@ -1,7 +1,7 @@
 quotequail
 ==========
 
-[![Build Status](https://travis-ci.org/elasticsales/quotequail.svg?branch=master)](https://travis-ci.org/elasticsales/quotequail)
+[![Build Status](https://travis-ci.org/closeio/quotequail.svg?branch=master)](https://travis-ci.org/closeio/quotequail)
 
 A library that identifies quoted text in plain text and HTML email messages.
 

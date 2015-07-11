@@ -3,7 +3,7 @@ from setuptools import setup
 setup(
     name='quotequail',
     version='0.1.1',
-    url='http://github.com/elasticsales/quotequail',
+    url='http://github.com/closeio/quotequail',
     license='MIT',
     author='Thomas Steinacher',
     author_email='engineering@close.io',
