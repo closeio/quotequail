@@ -78,6 +78,8 @@ HEADER_MAP = {
 
 COMPILED_PATTERNS = [re.compile(regex) for regex in REPLY_PATTERNS + FORWARD_PATTERNS ]
 
+MULTIPLE_WHITESPACE_RE = re.compile('\s+')
+
 def quote(text, limit=1000):
     """
     Takes a plain text message as an argument, returns a list of tuples. The
@@ -181,7 +183,7 @@ def quote_html(html, limit=10000):
             else:
                 for text_idx, text in _get_inline_texts(el):
                     for regex in COMPILED_PATTERNS:
-                        if re.match(regex, text.strip()):
+                        if re.match(regex, MULTIPLE_WHITESPACE_RE.sub(' ', text)):
                             # Insert quotequail divider *after* the text.
                             # If the index is past the last element, insert it
                             # after the parent element to prevent an orphan tag.
