@@ -18,12 +18,16 @@ REPLY_PATTERNS = [
 FORWARD_MESSAGES = [
     # apple mail forward
     'Begin forwarded message', 'Anfang der weitergeleiteten E-Mail',
+    u'Début du message réexpédié',
 
     # gmail/evolution forward
     'Forwarded [mM]essage', 'Mensaje reenviado',
 
     # outlook
     'Original [mM]essage', 'Ursprüngliche Nachricht', 'Mensaje [oO]riginal',
+
+    # Thunderbird forward
+    u'Message transféré',
 ]
 
 FORWARD_PATTERNS = [
@@ -45,6 +49,7 @@ HEADER_MAP = {
     'an': 'to',
     'para': 'to',
     u'à': 'to',
+    u'pour': 'to',
 
     'cc': 'cc',
     'kopie': 'cc',
@@ -57,7 +62,9 @@ HEADER_MAP = {
 
     'date': 'date',
     'sent': 'date',
+    'received': 'date',
     'datum': 'date',
+    'gesendet': 'date',
     'enviado el': 'date',
     'enviados': 'date',
     'fecha': 'date',
@@ -66,6 +73,7 @@ HEADER_MAP = {
     'betreff': 'subject',
     'asunto': 'subject',
     'objet': 'subject',
+    'sujet': 'subject',
 }
 
 COMPILED_PATTERNS = [re.compile(regex) for regex in REPLY_PATTERNS + FORWARD_PATTERNS ]

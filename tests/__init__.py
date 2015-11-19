@@ -529,6 +529,51 @@ Hello, thanks for your reply
             'text': u'Hello, thanks for your reply',
         })
 
+    def test_forward_french_apple_mail(self):
+        self.assertEqual(unwrap(u'''
+Text before
+
+Début du message réexpédié :
+
+De: "Foo Bar" <from@example.com>
+Date: 14 novembre 2015 15:14:53 UTC+1
+À: "'Ham Spam'" <to@example.com>
+Objet: RE: The subject
+
+Text after
+'''), {
+            'date': u'14 novembre 2015 15:14:53 UTC+1',
+            'from': u'"Foo Bar" <from@example.com>',
+            'subject': 'RE: The subject',
+            'text': u'Text after',
+            'text_top': u'Text before',
+            'to': u'"\'Ham Spam\'" <to@example.com>',
+            'type': 'forward'
+        })
+
+    def test_forward_french_thunderbird(self):
+        self.assertEqual(unwrap(u'''
+Text before
+
+-------- Message transféré --------
+Sujet :     Re: Some subject
+Date :  Wed, 11 Nov 2015 12:31:25 +0100
+De :    Foo Bar <from@example.com>
+Pour :  Ham Spam <to@example.com>
+
+Text after
+'''), {
+            'date': u'Wed, 11 Nov 2015 12:31:25 +0100',
+            'from': u'Foo Bar <from@example.com>',
+            'subject': 'Re: Some subject',
+            'text': u'Text after',
+            'text_top': u'Text before',
+            'to': u'Ham Spam <to@example.com>',
+            'type': 'forward'
+        })
+
+
+
 if __name__ == '__main__':
     unittest.main()
 
