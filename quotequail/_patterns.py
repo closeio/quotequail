@@ -3,15 +3,19 @@
 import re
 
 REPLY_PATTERNS = [
-    '^On .*wrote:$', # apple mail/gmail reply
-    '^Am .*schrieb .*:$', # German
-    '[0-9]{4}/[0-9]{1,2}/[0-9]{1,2} .* <.*@.*>$', # gmail (?) reply
+    u'^On (.*) wrote:$', # apple mail/gmail reply
+    u'^Am (.*) schrieb (.*):$', # German
+    u'^Le (.*) a écrit :$', # French
+    u'El (.*) escribió:$', # Spanish
+    u'([0-9]{4}/[0-9]{1,2}/[0-9]{1,2}) (.* <.*@.*>)$', # gmail (?) reply
 ]
+
+REPLY_DATE_SPLIT_REGEX = re.compile(r'^(.*(:[0-9]{2}( [apAP]\.?[mM]\.?)?)), (.*)?$')
 
 FORWARD_MESSAGES = [
     # apple mail forward
     'Begin forwarded message', 'Anfang der weitergeleiteten E-Mail',
-    u'Début du message réexpédié',
+    u'Début du message réexpédié', 'Inicio del mensaje reenviado',
 
     # gmail/evolution forward
     'Forwarded [mM]essage', 'Mensaje reenviado',
@@ -55,6 +59,7 @@ HEADER_MAP = {
     'kopie': 'cc',
 
     'bcc': 'bcc',
+    'cco': 'bcc',
     'blindkopie': 'bcc',
 
     'reply-to': 'reply-to',

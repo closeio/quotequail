@@ -503,8 +503,13 @@ On 2012-10-16 at 17:02 , Someone <someone@example.com> wrote:
 
 > Some quoted text
 """)
-        # TODO: parsing replies is not fully implemented
-        self.assertEqual(data['type'], 'reply')
+        self.assertEqual(data, {
+            'type': 'reply',
+            'date': '2012-10-16 at 17:02',
+            'from': 'Someone <someone@example.com>',
+            'text_top': 'Hello world.',
+            'text': 'Some quoted text',
+        })
 
     def test_reply_2(self):
         data = unwrap("""Hello world.
@@ -611,9 +616,11 @@ class HTMLUnwrapTestCase(unittest.TestCase):
         html = '<html><head><meta http-equiv="Content-Type" content="text/html charset=us-ascii"></head><body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;" class="">Foo<div class=""><br class=""></div><div class="">Bar</div><div class=""><br class=""></div><div class=""><div><blockquote type="cite" class=""><div class="">On 2016-03-25, at 23:01, John Doe &lt;<a href="mailto:john@doe.example" class="">john@doe.example</a>&gt; wrote:</div><br class="Apple-interchange-newline"><div class=""><meta http-equiv="Content-Type" content="text/html charset=us-ascii" class=""><div style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;" class="">Some <b class="">important</b> email<br class=""></div></div></blockquote></div><br class=""></div></body></html>'
 
         self.assertEqual(unwrap_html(html), {
+            'type': 'reply',
+            'from': 'John Doe <john@doe.example>',
+            'date': '2016-03-25, at 23:01',
             'html': '<html><body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;" class=""><div class=""><div><div><div class=""><div style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;" class="">Some <b class="">important</b> email</div></div></div></div></div></body></html>',
             'html_top': '<html><head></head><body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;" class="">Foo<div class=""><br class=""></div><div class="">Bar</div></body></html>',
-            'type': 'reply',
         })
 
     def test_gmail_reply(self):
@@ -629,9 +636,76 @@ Thanks a lot!<br>
 
         self.assertEqual(unwrap_html(html), {
             'type': 'reply',
+            'from': 'Foo Bar <foo@bar.example>',
+            'date': 'Wed, Mar 16, 2016 at 12:49 AM',
             'html_top': '<html><head></head><body><div dir="ltr">foo<div><br></div><div>bar</div></div></body></html>',
             'html': '<html><body><div class="gmail_extra"><div class="gmail_quote"><div>Hi,<br>\n<br>This is the reply<br>\n<br>\nThanks a lot!<br>\n<span class="HOEnZb"><font color="#888888">Foo</font></span></div></div></div></body></html>',
             'html_bottom': '<html><body><div class="gmail_extra">-- <br><div class="gmail_signature"><div dir="ltr"><div><div dir="ltr"><b>John Doe</b></div><div dir="ltr"><b>Senior Director</b><div>Some Company</div></div></div></div></div>\n</div>\n</body></html>',
+        })
+
+class InternalTestCase(unittest.TestCase):
+    def test_parse_reply(self):
+
+        from quotequail._internal import parse_reply
+
+        data = parse_reply(u'Am 24.02.2015 um 22:48 schrieb John Doe <john@doe.example>:')
+        self.assertEqual(data, {
+            'date': u'24.02.2015 um 22:48',
+            'from': u'John Doe <john@doe.example>'
+        })
+
+        data = parse_reply(u'On Monday, March 7, 2016 10:19 AM, John Doe <john@doe.example> wrote:')
+        self.assertEqual(data, {
+            'date': u'Monday, March 7, 2016 10:19 AM',
+            'from': u'John Doe <john@doe.example>'
+        })
+
+        data = parse_reply(u'On Feb 22, 2015, at 9:19 PM, John Doe <john@doe.example> wrote:')
+        self.assertEqual(data, {
+            'date': u'Feb 22, 2015, at 9:19 PM',
+            'from': u'John Doe <john@doe.example>'
+        })
+
+        data = parse_reply(u'On 2016-03-14, at 20:26, John Doe <john@doe.example> wrote:')
+        self.assertEqual(data, {
+            'date': u'2016-03-14, at 20:26',
+            'from': u'John Doe <john@doe.example>'
+        })
+
+        data = parse_reply(u'Le 6 janv. 2014 à 19:50, John Doe <john@doe.example> a écrit :')
+        self.assertEqual(data, {
+            'date': u'6 janv. 2014 \xe0 19:50',
+            'from': u'John Doe <john@doe.example>'
+        })
+
+        data = parse_reply(u'Le 02.10.2013 à 11:13, John Doe <john@doe.example> a écrit :')
+        self.assertEqual(data, {
+            'date': u'02.10.2013 \xe0 11:13',
+            'from': u'John Doe <john@doe.example>'
+        })
+
+        data = parse_reply(u'El 11/07/2012 06:13 p.m., John Doe escribió:')
+        self.assertEqual(data, {
+            'date': u'11/07/2012 06:13 p.m.',
+            'from': u'John Doe'
+        })
+
+        data = parse_reply(u'El 06/04/2010, a las 13:13, John Doe escribió:')
+        self.assertEqual(data, {
+            'date': u'06/04/2010, a las 13:13',
+            'from': u'John Doe'
+        })
+
+        data = parse_reply(u'2009/5/12 John Doe <john@doe.example>')
+        self.assertEqual(data, {
+            'date': u'2009/5/12',
+            'from': u'John Doe <john@doe.example>'
+        })
+
+        data = parse_reply(u"On 8 o'clock, John Doe wrote:")
+        self.assertEqual(data, {
+            'date': u"8 o'clock",
+            'from': u'John Doe'
         })
 
 class InternalHTMLTestCase(unittest.TestCase):

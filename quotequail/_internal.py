@@ -1,7 +1,5 @@
 import re
-
-import re
-from ._patterns import COMPILED_PATTERNS, COMPILED_PATTERN_MAP, HEADER_RE, HEADER_MAP
+from ._patterns import COMPILED_PATTERNS, COMPILED_PATTERN_MAP, HEADER_RE, HEADER_MAP, REPLY_DATE_SPLIT_REGEX
 
 """
 Internal methods. For max_wrap_lines, min_header_lines, min_quoted_lines
@@ -74,6 +72,47 @@ def extract_headers(lines, max_wrap_lines):
 
     return hdrs, n
 
+def parse_reply(line):
+    """
+    Parses the given reply line ("On DATE, USER wrote:") and returns a
+    dictionary with the "Date" and "From" keys, or None, if couldn't parse.
+    """
+    if line.startswith('>'):
+        line = line[1:].strip()
+
+    date = user = None
+
+    for pattern in COMPILED_PATTERN_MAP['reply']:
+        match = pattern.match(line)
+        if match:
+            groups = match.groups()
+            if len(groups) == 2:
+                # We're lucky and got both date and user split up.
+                date, user = groups
+            else:
+                split_match = REPLY_DATE_SPLIT_REGEX.match(groups[0])
+                if split_match:
+                    split_groups = split_match.groups()
+                    date = split_groups[0]
+                    user = split_groups[-1]
+                else:
+                    # Try a simple comma split
+                    split = groups[0].rsplit(',', 1)
+                    if len(split) == 2:
+                        date, user = split
+
+    if date:
+        date = date.strip()
+
+    if user:
+        user = user.strip()
+
+    if date and user:
+        return {
+            'date': date.strip(),
+            'from': user.strip(),
+        }
+
 def find_unwrap_start(lines, max_wrap_lines, min_header_lines, min_quoted_lines):
     """
     Find starting point of wrapped email. Returns a tuple containing
@@ -143,6 +182,9 @@ def unwrap(lines, max_wrap_lines, min_header_lines, min_quoted_lines):
     - Range of the text below the wrapped message (or None)
     - Whether the wrapped text needs to be unindented
     """
+
+    headers = {}
+
     # Get line number and wrapping type.
     start, typ = find_unwrap_start(lines, max_wrap_lines, min_header_lines, min_quoted_lines)
 
@@ -150,8 +192,14 @@ def unwrap(lines, max_wrap_lines, min_header_lines, min_quoted_lines):
     if typ in ('forward', 'reply'):
         main_type = typ
 
+        if typ == 'reply':
+            reply_headers = parse_reply(lines[start])
+            if reply_headers:
+                headers.update(reply_headers)
+
         # Find where the headers or the quoted section starts.
-        start2, typ = find_unwrap_start(lines[start+1:], max_wrap_lines, min_header_lines, min_quoted_lines)
+        # We can set min_quoted_lines to 1 because we expect a quoted section.
+        start2, typ = find_unwrap_start(lines[start+1:], max_wrap_lines, min_header_lines, 1)
 
         if typ == 'quoted':
             # Quoted section starts. Unindent and check if there are headers.
@@ -161,23 +209,23 @@ def unwrap(lines, max_wrap_lines, min_header_lines, min_quoted_lines):
             start3, typ = find_unwrap_start(unquoted, max_wrap_lines, min_header_lines, min_quoted_lines)
             if typ == 'headers':
                 hdrs, hdrs_length = extract_headers(unquoted[start3:], max_wrap_lines)
-                #return main_type, lines[:start], hdrs, rest2, rest
+                if hdrs:
+                    headers.update(hdrs)
                 rest2_start = quoted_start+start3+hdrs_length
-                return main_type, (0, start), hdrs, (rest2_start, rest_start), (rest_start, None), True
+                return main_type, (0, start), headers, (rest2_start, rest_start), (rest_start, None), True
             else:
-                return main_type, (0, start), None, (quoted_start, rest_start), (rest_start, None), True
+                return main_type, (0, start), headers, (quoted_start, rest_start), (rest_start, None), True
 
         elif typ == 'headers':
             hdrs, hdrs_length = extract_headers(lines[start+1:], max_wrap_lines)
+            if hdrs:
+                headers.update(hdrs)
             rest_start = start + 1 + hdrs_length
-            #return main_type, lines[:start], hdrs, rest, []
-            return main_type, (0, start), hdrs, (rest_start, None), None, False
+            return main_type, (0, start), headers, (rest_start, None), None, False
         else:
-            #return main_type, lines[:start], None, lines[start+(start2 or 0)+1:], []
-
             # Didn't find quoted section or headers, assume that everything
             # below is the qouted text.
-            return main_type, (0, start), None, (start+(start2 or 0)+1, None), None, False
+            return main_type, (0, start), headers, (start+(start2 or 0)+1, None), None, False
 
     # We just found headers, which usually indicates a forwarding.
     elif typ == 'headers':
@@ -198,5 +246,4 @@ def unwrap(lines, max_wrap_lines, min_header_lines, min_quoted_lines):
             return main_type, (0, start), hdrs, (rest2_start, rest_start), (rest_start, None), True
         else:
             main_type = 'quote'
-            #return main_type, lines[:start], None, unquoted, rest
             return main_type, (None, start), None, (start, rest_start), (rest_start, None), True
