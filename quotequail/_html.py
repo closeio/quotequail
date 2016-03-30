@@ -11,6 +11,11 @@ INLINE_TAGS = ['a', 'b', 'em', 'i', 'strong', 'span', 'font', 'q',
 BEGIN = 'begin'
 END = 'end'
 
+try:
+    string_class = basestring # Python 2.7
+except NameError:
+    string_class = str # Python 3.x
+
 def trim_tree_after(element, include_element=True):
     """
     Removes the document tree following the given element. If include_element
@@ -111,10 +116,10 @@ def slice_tree(tree, start_refs, end_refs, slice_tuple, html_copy=None):
             (slice_end is not None and slice_end <= 0)):
             return get_html_tree('')
 
-        if slice_start <= 0:
+        if slice_start != None and slice_start <= 0:
             slice_start = None
 
-        if slice_end >= len(start_refs):
+        if slice_end != None and slice_end >= len(start_refs):
             slice_end = None
     else:
         slice_start, slice_end = None, None
@@ -169,7 +174,7 @@ def get_html_tree(html):
     # If the document doesn't start with a top level tag, wrap it with a <div>
     # that will be later stripped out for consistent behavior.
     if tree.tag not in lxml.html.defs.top_level_tags:
-        html = '<div>%s</div>' % html
+        html = b'<div>%s</div>' % html
         tree = lxml.html.fromstring(html, parser=parser)
 
     return tree
@@ -187,10 +192,11 @@ def render_html_tree(tree):
     Renders the given HTML tree, and strips any wrapping that was applied in
     get_html_tree().
     """
-    return strip_wrapping(lxml.html.tostring(tree))
+    html = lxml.html.tostring(tree, encoding='utf8').decode('utf8')
+    return strip_wrapping(html)
 
 def is_indentation_element(element):
-    if isinstance(element.tag, basestring):
+    if isinstance(element.tag, string_class):
         return element.tag.lower() == 'blockquote'
     return False
 
@@ -206,7 +212,7 @@ def tree_token_generator(el, indentation_level=0):
     - Text right after the end of the tag, or None.
     """
 
-    if not isinstance(el.tag, basestring):
+    if not isinstance(el.tag, string_class):
         return
 
     tag_name = el.tag.lower()
@@ -304,7 +310,7 @@ def tree_line_generator(el, max_lines=None):
                     start_ref = (el, state)
                     start_indentation_level = indentation_level
 
-        elif isinstance(token, basestring):
+        elif isinstance(token, string_class):
             line += token
 
         else:
@@ -336,7 +342,7 @@ def get_line_info(tree, max_lines=None):
     tree_line_generator() docs), and an array of corresponding lines.
     """
     line_gen = indented_tree_line_generator(tree, max_lines=max_lines)
-    line_gen_result = zip(*line_gen)
+    line_gen_result = list(zip(*line_gen))
     if line_gen_result:
         return line_gen_result
     else:
