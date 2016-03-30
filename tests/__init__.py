@@ -215,8 +215,6 @@ test &#228;
         ])
 
 class UnwrapTestCase(unittest.TestCase):
-    # TODO: Test this function with replies
-
     def test_gmail_forward(self):
         # Gmail forward
         self.assertEqual(unwrap("""Hello
@@ -519,8 +517,13 @@ someone@example.com> wrote:
 
 > Some quoted text
 """)
-        # TODO: parsing replies is not fully implemented
-        self.assertEqual(data['type'], 'reply')
+        self.assertEqual(data, {
+            'type': 'reply',
+            'date': '2012-10-16 at 17:02',
+            'from': 'Someone <someone@example.com>',
+            'text_top': 'Hello world.',
+            'text': 'Some quoted text',
+        })
 
     def test_french(self):
         self.assertEqual(unwrap(u"""

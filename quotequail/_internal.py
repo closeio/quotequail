@@ -1,5 +1,5 @@
 import re
-from ._patterns import COMPILED_PATTERNS, COMPILED_PATTERN_MAP, HEADER_RE, HEADER_MAP, REPLY_DATE_SPLIT_REGEX
+from ._patterns import COMPILED_PATTERNS, COMPILED_PATTERN_MAP, HEADER_RE, HEADER_MAP, REPLY_DATE_SPLIT_REGEX, STRIP_SPACE_CHARS
 
 """
 Internal methods. For max_wrap_lines, min_header_lines, min_quoted_lines
@@ -13,6 +13,8 @@ def find_pattern_on_line(lines, n, max_wrap_lines):
     line number of where the pattern ends. The returned line number may be
     different from the given line number in case the pattern wraps over
     multiple lines.
+
+    Returns (None, None) if no pattern was found.
     """
     for typ, regexes in COMPILED_PATTERN_MAP.items():
         for regex in regexes:
@@ -22,6 +24,7 @@ def find_pattern_on_line(lines, n, max_wrap_lines):
                     match_line = match_line[1:].strip()
                 if re.match(regex, match_line.strip()):
                     return n+m, typ
+    return None, None
 
 def find_quote_position(lines, max_wrap_lines, limit=None):
     """
@@ -30,13 +33,32 @@ def find_quote_position(lines, max_wrap_lines, limit=None):
     """
 
     for n in range(len(lines)):
-        result = find_pattern_on_line(lines, n, max_wrap_lines)
-        if result:
-            return result[0]
+        end, typ = find_pattern_on_line(lines, n, max_wrap_lines)
+        if typ:
+            return end
         if limit != None and n >= limit-1:
             return n
 
     return None
+
+def join_wrapped_lines(lines):
+    """
+    Join one or multiple lines that wrapped. Returns the reconstructed line.
+    Takes into account proper spacing between the lines (see
+    STRIP_SPACE_CHARS).
+    """
+    if len(lines) == 1:
+        return lines[0]
+
+    joined = lines[0]
+    for line in lines[1:]:
+        if joined and joined[-1] in STRIP_SPACE_CHARS:
+            joined += line
+        else:
+            joined += ' '
+            joined += line
+
+    return joined
 
 def extract_headers(lines, max_wrap_lines):
     """
@@ -65,7 +87,8 @@ def extract_headers(lines, max_wrap_lines):
         else:
             extend_lines += 1
             if extend_lines < max_wrap_lines and header_name in HEADER_MAP:
-                hdrs[HEADER_MAP[header_name]] = ' '.join([hdrs[HEADER_MAP[header_name]], line.strip()]).strip()
+                hdrs[HEADER_MAP[header_name]] = join_wrapped_lines(
+                        [hdrs[HEADER_MAP[header_name]], line.strip()])
             else:
                 # no more headers found
                 break
@@ -115,13 +138,22 @@ def parse_reply(line):
 
 def find_unwrap_start(lines, max_wrap_lines, min_header_lines, min_quoted_lines):
     """
-    Find starting point of wrapped email. Returns a tuple containing
-    (line_number, type) where type can be one of the following:
+    Finds the starting point of a wrapped email. Returns a tuple containing
+    (start_line_number, end_line_number, type), where type can be one of the
+    following:
+
      * 'forward': A matching forwarding pattern was found
      * 'reply': A matching reply pattern was found
      * 'headers': Headers were found (usually a forwarded email)
      * 'quote': A quote was found
-    Returns (None, None) if nothing was found.
+
+    start_line_number corresponds to the line number where the forwarding/reply
+    pattern starts, or where the headers/quote starts. end_line_number is only
+    different from start_line_number if the forwarding/reply pattern spans over
+    multiple lines (it does not extend to the end of the headers or of the
+    quoted section).
+
+    Returns (None, None, None) if nothing was found.
     """
 
     for n, line in enumerate(lines):
@@ -129,9 +161,10 @@ def find_unwrap_start(lines, max_wrap_lines, min_header_lines, min_quoted_lines)
             continue
 
         # Find a forward / reply start pattern
-        result = find_pattern_on_line(lines, n, max_wrap_lines)
-        if result:
-            return result
+
+        end, typ = find_pattern_on_line(lines, n, max_wrap_lines)
+        if typ:
+            return n, end, typ
 
         # Find a quote
         if line.startswith('>'):
@@ -139,7 +172,7 @@ def find_unwrap_start(lines, max_wrap_lines, min_header_lines, min_quoted_lines)
             matched_lines = 1
 
             if matched_lines >= min_quoted_lines:
-                return n, 'quoted'
+                return n, n, 'quoted'
 
             for peek_line in lines[n+1:]:
                 if not peek_line.strip():
@@ -149,15 +182,15 @@ def find_unwrap_start(lines, max_wrap_lines, min_header_lines, min_quoted_lines)
                 else:
                     matched_lines += 1
                 if matched_lines >= min_quoted_lines:
-                    return n, 'quoted'
+                    return n, n, 'quoted'
 
         # Find a header
         match = HEADER_RE.match(line)
         if match:
             if len(extract_headers(lines[n:], max_wrap_lines)[0]) >= min_header_lines:
-                return n, 'headers'
+                return n, n, 'headers'
 
-    return None, None
+    return None, None, None
 
 
 def unindent_lines(lines):
@@ -186,27 +219,27 @@ def unwrap(lines, max_wrap_lines, min_header_lines, min_quoted_lines):
     headers = {}
 
     # Get line number and wrapping type.
-    start, typ = find_unwrap_start(lines, max_wrap_lines, min_header_lines, min_quoted_lines)
+    start, end, typ = find_unwrap_start(lines, max_wrap_lines, min_header_lines, min_quoted_lines)
 
     # We found a line indicating that it's a forward/reply.
     if typ in ('forward', 'reply'):
         main_type = typ
 
         if typ == 'reply':
-            reply_headers = parse_reply(lines[start])
+            reply_headers = parse_reply(join_wrapped_lines(lines[start:end+1]))
             if reply_headers:
                 headers.update(reply_headers)
 
         # Find where the headers or the quoted section starts.
         # We can set min_quoted_lines to 1 because we expect a quoted section.
-        start2, typ = find_unwrap_start(lines[start+1:], max_wrap_lines, min_header_lines, 1)
+        start2, end2, typ = find_unwrap_start(lines[end+1:], max_wrap_lines, min_header_lines, 1)
 
         if typ == 'quoted':
             # Quoted section starts. Unindent and check if there are headers.
-            quoted_start = start+1+start2
+            quoted_start = end+1+start2
             unquoted = unindent_lines(lines[quoted_start:])
             rest_start = quoted_start + len(unquoted)
-            start3, typ = find_unwrap_start(unquoted, max_wrap_lines, min_header_lines, min_quoted_lines)
+            start3, end3, typ = find_unwrap_start(unquoted, max_wrap_lines, min_header_lines, min_quoted_lines)
             if typ == 'headers':
                 hdrs, hdrs_length = extract_headers(unquoted[start3:], max_wrap_lines)
                 if hdrs:
@@ -238,7 +271,7 @@ def unwrap(lines, max_wrap_lines, min_header_lines, min_quoted_lines):
     elif typ == 'quoted':
         unquoted = unindent_lines(lines[start:])
         rest_start = start + len(unquoted)
-        start2, typ = find_unwrap_start(unquoted, max_wrap_lines, min_header_lines, min_quoted_lines)
+        start2, end2, typ = find_unwrap_start(unquoted, max_wrap_lines, min_header_lines, min_quoted_lines)
         if typ == 'headers':
             main_type = 'forward'
             hdrs, hdrs_length = extract_headers(unquoted[start2:], max_wrap_lines)

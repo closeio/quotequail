@@ -99,3 +99,8 @@ MIN_HEADER_LINES = 2
 
 # minimum number of lines to recognize a quoted block
 MIN_QUOTED_LINES = 3
+
+# Characters at the end of line where we join lines without adding a space.
+# For example, "John <\njohn@example>" becomes "John <john@example>", but
+# "John\nDoe" becomes "John Doe".
+STRIP_SPACE_CHARS = '<([{"\''
