@@ -1,3 +1,4 @@
 machine:
   pre:
+    - sudo apt-get install libxml2-dev libxslt-dev
     - git -C .pyenv/ pull
