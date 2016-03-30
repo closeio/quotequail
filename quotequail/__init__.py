@@ -4,7 +4,7 @@
 
 import re
 
-import _html, _internal
+from . import _internal
 
 __all__ = ['quote', 'quote_html', 'unwrap', 'unwrap_html']
 
@@ -13,7 +13,9 @@ def quote(text, limit=1000):
     """
     Takes a plain text message as an argument, returns a list of tuples. The
     first argument of the tuple denotes whether the text should be expanded by
-    default. E.g. [(True, 'expanded text'), (False, 'Some quoted text')]
+    default. The second argument is the unmodified corresponding text.
+
+    Example: [(True, 'expanded text'), (False, '> Some quoted text')]
 
     Unless the limit param is set to None, the text will automatically be quoted
     starting at the line where the limit is reached.
@@ -31,9 +33,11 @@ def quote(text, limit=1000):
 def quote_html(html, limit=1000):
     """
     Like quote(), but takes an HTML message as an argument. The limit param
-    represents the maximum number of tags to traverse until quoting the rest
-    of the markup.
+    represents the maximum number of lines to traverse until quoting the rest
+    of the markup. Lines are separated by block elements or <br>.
     """
+    from . import _html
+
     tree = _html.get_html_tree(html)
 
     start_refs, end_refs, lines = _html.get_line_info(tree, limit+1)
@@ -56,15 +60,15 @@ def quote_html(html, limit=1000):
 
 def unwrap(text):
     """
-    If the passed text is the text body of a forwarded message, a dictionary
-    with the following keys is returned:
+    If the passed text is the text body of a forwarded message, a reply, or
+    contains quoted text, a dictionary with the following keys is returned:
 
     - type: "reply", "forward" or "quote"
     - text_top: Text at the top of the passed message (if found)
     - text_bottom: Text at the bottom of the passed message (if found)
     - from / to / subject / cc / bcc / reply-to: Corresponding header of the
       forwarded message, if it exists. (if found)
-    - text: Text of the forwarded message (if found)
+    - text: Unindented text of the wrapped message (if found)
 
     Otherwise, this function returns None.
     """
@@ -117,6 +121,8 @@ def unwrap_html(html):
 
     Otherwise, this function returns None.
     """
+    from . import _html
+
     tree = _html.get_html_tree(html)
 
     start_refs, end_refs, lines = _html.get_line_info(tree)
