@@ -185,7 +185,7 @@ def strip_wrapping(html):
     """
     if html.startswith('<div>') and html.endswith('</div>'):
         html = html[5:-6]
-    return html
+    return html.strip()
 
 def render_html_tree(tree):
     """

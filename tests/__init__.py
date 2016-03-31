@@ -109,7 +109,7 @@ class HTMLQuoteTestCase(unittest.TestCase):
             quote_html(u'''<div dir="ltr">looks good\xa0</div><div class="gmail_extra"><br><div class="gmail_quote">On Thu, Dec 18, 2014 at 10:02 AM, foo <span dir="ltr">&lt;<a href="mailto:foo@example.com" target="_blank">foo@example.com</a>&gt;</span> wrote:<blockquote class="gmail_quote" style="margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex"><div dir="ltr">Hey Phil,\xa0<div><br><div>Sending you the report:\xa0</div></div><div><span class="HOEnZb"><font color="#888888"><br></font></span></div><span class="HOEnZb"><font color="#888888"><div><br></div><div class="gmail_extra">-- <br><div><div dir="ltr"><div>Cheers,</div><div>foo &amp; example Team</div><div><a href="http://www.example.com" target="_blank">www.example.com</a> ; - <a href="mailto:help@example.com" target="_blank">help@example.com</a>\xa0</div></div></div>\r\n</div></font></span></div>\r\n</blockquote></div></div>\r\n'''),
             [
                 (True, u'''<div dir="ltr">looks good\xa0</div><div class="gmail_extra"><br><div class="gmail_quote">On Thu, Dec 18, 2014 at 10:02 AM, foo <span dir="ltr">&lt;<a href="mailto:foo@example.com" target="_blank">foo@example.com</a>&gt;</span> wrote:</div></div>'''),
-                (False, u'''<div class="gmail_extra"><div class="gmail_quote"><blockquote class="gmail_quote" style="margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex"><div dir="ltr">Hey Phil,\xa0<div><br><div>Sending you the report:\xa0</div></div><div><span class="HOEnZb"><font color="#888888"><br></font></span></div><span class="HOEnZb"><font color="#888888"><div><br></div><div class="gmail_extra">-- <br><div><div dir="ltr"><div>Cheers,</div><div>foo &amp; example Team</div><div><a href="http://www.example.com" target="_blank">www.example.com</a> ; - <a href="mailto:help@example.com" target="_blank">help@example.com</a>\xa0</div></div></div>\r\n</div></font></span></div>\r\n</blockquote></div></div>\r\n'''),
+                (False, u'''<div class="gmail_extra"><div class="gmail_quote"><blockquote class="gmail_quote" style="margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex"><div dir="ltr">Hey Phil,\xa0<div><br><div>Sending you the report:\xa0</div></div><div><span class="HOEnZb"><font color="#888888"><br></font></span></div><span class="HOEnZb"><font color="#888888"><div><br></div><div class="gmail_extra">-- <br><div><div dir="ltr"><div>Cheers,</div><div>foo &amp; example Team</div><div><a href="http://www.example.com" target="_blank">www.example.com</a> ; - <a href="mailto:help@example.com" target="_blank">help@example.com</a>\xa0</div></div></div>\r\n</div></font></span></div>\r\n</blockquote></div></div>'''),
             ]
         )
 
@@ -588,6 +588,15 @@ Text after
         })
 
 class HTMLUnwrapTestCase(unittest.TestCase):
+    def test_simple_forward(self):
+        html = u'Begin forwarded message:<br>\n<br>\nFrom: someone@example.com<br>\nTo: anyone@example.com<br>\nSubject: You won<br>\n'
+        self.assertEqual(unwrap_html(html), {
+            'type': 'forward',
+            'from': 'someone@example.com',
+            'to': 'anyone@example.com',
+            'subject': 'You won',
+        })
+
     def test_apple_forward(self):
         html = '<html><head><meta http-equiv="Content-Type" content="text/html charset=utf-8"></head><body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;" class="">test<div class=""><br class=""></div><div class="">blah<br class=""><div><br class=""><div><br class=""><blockquote type="cite" class=""><div class="">Begin forwarded message:</div><br class="Apple-interchange-newline"><div style="margin-top: 0px; margin-right: 0px; margin-bottom: 0px; margin-left: 0px;" class=""><span style="font-family: -webkit-system-font, Helvetica Neue, Helvetica, sans-serif; color:rgba(0, 0, 0, 1.0);" class=""><b class="">From: </b></span><span style="font-family: -webkit-system-font, Helvetica Neue, Helvetica, sans-serif;" class="">Foo Bar &lt;<a href="mailto:foo@bar.example" class="">foo@bar.example</a>&gt;<br class=""></span></div><div style="margin-top: 0px; margin-right: 0px; margin-bottom: 0px; margin-left: 0px;" class=""><span style="font-family: -webkit-system-font, Helvetica Neue, Helvetica, sans-serif; color:rgba(0, 0, 0, 1.0);" class=""><b class="">Subject: </b></span><span style="font-family: -webkit-system-font, Helvetica Neue, Helvetica, sans-serif;" class=""><b class="">The Subject</b><br class=""></span></div><div style="margin-top: 0px; margin-right: 0px; margin-bottom: 0px; margin-left: 0px;" class=""><span style="font-family: -webkit-system-font, Helvetica Neue, Helvetica, sans-serif; color:rgba(0, 0, 0, 1.0);" class=""><b class="">Date: </b></span><span style="font-family: -webkit-system-font, Helvetica Neue, Helvetica, sans-serif;" class="">March 24, 2016 at 20:16:25 GMT+1<br class=""></span></div><div style="margin-top: 0px; margin-right: 0px; margin-bottom: 0px; margin-left: 0px;" class=""><span style="font-family: -webkit-system-font, Helvetica Neue, Helvetica, sans-serif; color:rgba(0, 0, 0, 1.0);" class=""><b class="">To: </b></span><span style="font-family: -webkit-system-font, Helvetica Neue, Helvetica, sans-serif;" class="">John Doe &lt;<a href="mailto:john@doe.example" class="">john@doe.example</a>&gt;<br class=""></span></div><br class=""><div class=""><div dir="ltr" class="">Text of the original email</div>'
 
@@ -712,6 +721,48 @@ class InternalTestCase(unittest.TestCase):
         })
 
 class InternalHTMLTestCase(unittest.TestCase):
+    def test_extract_headers(self):
+        from quotequail._internal import extract_headers
+        self.assertEqual(
+            extract_headers([], 2),
+            ({}, 0)
+        )
+        self.assertEqual(
+            extract_headers(['test'], 2),
+            ({}, 0)
+        )
+        self.assertEqual(
+            extract_headers(['From: b', 'To: c'], 2),
+            ({'from': 'b', 'to': 'c'}, 2)
+        )
+        self.assertEqual(
+            extract_headers(['From: b', 'foo'], 2),
+            ({'from': 'b foo'}, 2)
+        )
+        self.assertEqual(
+            extract_headers(['From: b', 'foo'], 1),
+            ({'from': 'b'}, 1)
+        )
+        self.assertEqual(
+            extract_headers(['From: b', 'To: c', '', 'other line'], 2),
+            ({'from': 'b', 'to': 'c'}, 2)
+        )
+        self.assertEqual(
+            extract_headers(['From: some very very very long name <',
+                             'verylong@example.com>',
+                             'Subject: this is a very very very very long',
+                             'subject',
+                             '',
+                             'other line'], 2),
+            ({'from': 'some very very very long name <verylong@example.com>',
+              'subject': 'this is a very very very very long subject'}, 4)
+        )
+        self.assertEqual(
+            extract_headers(['From: some very very very long name <',
+                             'verylong@example.com>'], 1),
+            ({'from': 'some very very very long name <',}, 1)
+        )
+
     def test_tree_line_generator(self):
         from quotequail import _html
 
