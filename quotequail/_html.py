@@ -183,7 +183,7 @@ def get_html_tree(html):
     # HACK for Outlook emails, where tags like <o:p> are rendered as <p>.
     for el in tree.iter():
         if el.nsmap:
-            el.tag = '{}:{}'.format(el.nsmap.keys()[0], el.tag)
+            el.tag = '{}:{}'.format(list(el.nsmap.keys())[0], el.tag)
 
     return tree
 
