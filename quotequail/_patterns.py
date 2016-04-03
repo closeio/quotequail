@@ -63,7 +63,9 @@ HEADER_MAP = {
     'blindkopie': 'bcc',
 
     'reply-to': 'reply-to',
+    'antwort an': 'reply-to',
     u'répondre à': 'reply-to',
+    'responder a': 'reply-to',
 
     'date': 'date',
     'sent': 'date',
