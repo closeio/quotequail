@@ -32,7 +32,7 @@ def trim_tree_after(element, include_element=True):
             parent_el.remove(remove_el)
         el = parent_el
 
-def trim_tree_before(element, include_element=True):
+def trim_tree_before(element, include_element=True, keep_head=True):
     """
     Removes the document tree preceding the given element. If include_element
     is True, the given element is kept in the tree, otherwise it is removed.
@@ -47,7 +47,8 @@ def trim_tree_before(element, include_element=True):
         while el is not None:
             remove_el = el
             el = el.getprevious()
-            parent_el.remove(remove_el)
+            if not keep_head or remove_el.tag.lower() != 'head':
+                parent_el.remove(remove_el)
         el = parent_el
 
 def trim_slice(lines, slice_tuple):
