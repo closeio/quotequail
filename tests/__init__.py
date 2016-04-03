@@ -7,11 +7,11 @@ from quotequail import *
 class FileMixin(object):
     def read_file(self, name):
         with open(os.path.join(os.path.dirname(__file__), 'files', name), 'rb') as f:
-            return f.read()
+            return f.read().decode('utf8')
 
     def assert_equal_to_file(self, string, name):
         expected = self.read_file(name)
-        self.assertEqual(string.encode('utf8'), expected)
+        self.assertEqual(string, expected)
 
 class QuoteTestCase(unittest.TestCase):
     def test_quote_reply_1(self):
