@@ -132,26 +132,28 @@ def slice_tree(tree, start_refs, end_refs, slice_tuple, html_copy=None):
         if slice_end < len(end_refs):
             end_ref = end_refs[slice_end-1]
 
-    et = lxml.etree.ElementTree(tree)
-
     if html_copy is not None:
+        et = lxml.etree.ElementTree(tree)
+
         new_tree = get_html_tree(html_copy)
+
         if start_ref:
             selector = et.getelementpath(start_ref[0])
-            trim_tree_before(new_tree.find(selector),
-                            include_element=(start_ref[1] == BEGIN))
+            start_ref = (new_tree.find(selector), start_ref[1])
+
         if end_ref:
             selector = et.getelementpath(end_ref[0])
-            trim_tree_after(new_tree.find(selector),
-                            include_element=(end_ref[1] == END))
+            end_ref = (new_tree.find(selector), end_ref[1])
+
     else:
         new_tree = tree
-        if start_ref:
-            trim_tree_before(start_ref[0],
-                            include_element=(start_ref[1] == BEGIN))
-        if end_ref:
-            trim_tree_after(end_ref[0],
-                           include_element=(end_ref[1] == END))
+
+    if start_ref:
+        trim_tree_before(start_ref[0],
+                        include_element=(start_ref[1] == BEGIN))
+    if end_ref:
+        trim_tree_after(end_ref[0],
+                       include_element=(end_ref[1] == END))
 
     return new_tree
 
