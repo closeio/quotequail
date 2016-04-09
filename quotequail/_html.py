@@ -47,7 +47,9 @@ def trim_tree_before(element, include_element=True, keep_head=True):
         while el is not None:
             remove_el = el
             el = el.getprevious()
-            if not keep_head or remove_el.tag.lower() != 'head':
+            tag = remove_el.tag
+            is_head = isinstance(tag, string_class) and tag.lower() == 'head'
+            if not keep_head or not is_head:
                 parent_el.remove(remove_el)
         el = parent_el
 

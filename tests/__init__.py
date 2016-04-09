@@ -191,6 +191,15 @@ class HTMLQuoteTestCase(unittest.TestCase):
             ]
         )
 
+    def test_comment_3(self):
+        self.assertEqual(
+            quote_html(u'''<!-- test --><br><br>Begin forwarded message:<br><br><!-- test -->'''),
+            [
+                (True, '<!-- test --><br><br>Begin forwarded message:'),
+                (False, '<br><!-- test -->'),
+            ]
+        )
+
     def test_encoding(self):
         # We assume everything is UTF-8
         self.assertEqual(
