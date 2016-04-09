@@ -182,11 +182,6 @@ def get_html_tree(html):
         html = b'<div>%s</div>' % html
         tree = lxml.html.fromstring(html, parser=parser)
 
-    # HACK for Outlook emails, where tags like <o:p> are rendered as <p>.
-    for el in tree.iter():
-        if el.nsmap:
-            el.tag = '{}:{}'.format(list(el.nsmap.keys())[0], el.tag)
-
     return tree
 
 def strip_wrapping(html):
@@ -201,7 +196,16 @@ def render_html_tree(tree):
     """
     Renders the given HTML tree, and strips any wrapping that was applied in
     get_html_tree().
+
+    You should avoid further processing of the given tree after calling this
+    method because we modify namespaced tags here.
     """
+
+    # HACK for Outlook emails, where tags like <o:p> are rendered as <p>.
+    for el in tree.iter():
+        if el.nsmap:
+            el.tag = '{}:{}'.format(list(el.nsmap.keys())[0], el.tag)
+
     html = lxml.html.tostring(tree, encoding='utf8').decode('utf8')
     return strip_wrapping(html)
 

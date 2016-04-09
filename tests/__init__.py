@@ -200,6 +200,15 @@ class HTMLQuoteTestCase(unittest.TestCase):
             ]
         )
 
+    def test_prefix_tag(self):
+        self.assertEqual(
+            quote_html(u'''A<br>Begin forwarded message:<o:p></o:p>B'''),
+            [
+                (True, 'A<br>Begin forwarded message:'),
+                (False, 'B'),
+            ]
+        )
+
     def test_encoding(self):
         # We assume everything is UTF-8
         self.assertEqual(
