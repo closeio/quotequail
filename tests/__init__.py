@@ -1,7 +1,17 @@
 # -*- coding: utf-8 -*-
 
+import os
 import unittest
-from quotequail import quote, quote_html, unwrap
+from quotequail import *
+
+class FileMixin(object):
+    def read_file(self, name):
+        with open(os.path.join(os.path.dirname(__file__), 'files', name), 'rb') as f:
+            return f.read().decode('utf8')
+
+    def assert_equal_to_file(self, string, name):
+        expected = self.read_file(name)
+        self.assertEqual(string, expected)
 
 class QuoteTestCase(unittest.TestCase):
     def test_quote_reply_1(self):
@@ -87,7 +97,7 @@ class HTMLQuoteTestCase(unittest.TestCase):
                 # lxml.html.tostring include_meta_content_type flag)
                 (True, '''<html><head></head><body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;" class="">Some text<div class=""><br class=""></div><div class="">some more text</div><div class=""><br class=""></div><div class=""><br class=""><div><blockquote type="cite" class=""><div class="">On Nov 12, 2014, at 11:07 PM, Some One &lt;<a href="mailto:someone@example.com" class="">someone@example.com</a>&gt; wrote:</div></blockquote></div></div></body></html>'''),
                 # Note we have an empty div stripped out here.
-                (False, '''<html><body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;" class=""><div class=""><div><blockquote type="cite" class=""><br class="Apple-interchange-newline"><div class=""><div style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;" class="">Lorem ipsum dolor sit amet.<div class=""><br class=""></div></div></div></blockquote></div><br class=""></div></body></html>'''),
+                (False, '''<html><head></head><body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;" class=""><div class=""><div><blockquote type="cite" class=""><br class="Apple-interchange-newline"><div class=""><div style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;" class="">Lorem ipsum dolor sit amet.<div class=""><br class=""></div></div></div></blockquote></div><br class=""></div></body></html>'''),
             ]
         )
 
@@ -98,7 +108,7 @@ class HTMLQuoteTestCase(unittest.TestCase):
 </div>'''),
             [
                 (True, '''<div dir="ltr"><br><div class="gmail_quote">---------- Forwarded message ----------</div></div>'''),
-                (False, '''<div dir="ltr"><div class="gmail_quote"><br>From: <b class="gmail_sendername">Some One</b> <span dir="ltr">&lt;<a href="mailto:someone@example.com">someone@example.com</a>&gt;</span>
+                (False, '''<div dir="ltr"><div class="gmail_quote">From: <b class="gmail_sendername">Some One</b> <span dir="ltr">&lt;<a href="mailto:someone@example.com">someone@example.com</a>&gt;</span>
 </div><br><br clear="all"><div><br></div>-- <br><div class="gmail_signature"><div>Some One</div></div>
 </div>'''),
             ]
@@ -108,8 +118,8 @@ class HTMLQuoteTestCase(unittest.TestCase):
         self.assertEqual(
             quote_html(u'''<div dir="ltr">looks good\xa0</div><div class="gmail_extra"><br><div class="gmail_quote">On Thu, Dec 18, 2014 at 10:02 AM, foo <span dir="ltr">&lt;<a href="mailto:foo@example.com" target="_blank">foo@example.com</a>&gt;</span> wrote:<blockquote class="gmail_quote" style="margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex"><div dir="ltr">Hey Phil,\xa0<div><br><div>Sending you the report:\xa0</div></div><div><span class="HOEnZb"><font color="#888888"><br></font></span></div><span class="HOEnZb"><font color="#888888"><div><br></div><div class="gmail_extra">-- <br><div><div dir="ltr"><div>Cheers,</div><div>foo &amp; example Team</div><div><a href="http://www.example.com" target="_blank">www.example.com</a> ; - <a href="mailto:help@example.com" target="_blank">help@example.com</a>\xa0</div></div></div>\r\n</div></font></span></div>\r\n</blockquote></div></div>\r\n'''),
             [
-                (True, u'''<div dir="ltr">looks good&#160;</div><div class="gmail_extra"><br><div class="gmail_quote">On Thu, Dec 18, 2014 at 10:02 AM, foo <span dir="ltr">&lt;<a href="mailto:foo@example.com" target="_blank">foo@example.com</a>&gt;</span> wrote:</div></div>'''),
-                (False, u'''<div class="gmail_extra"><div class="gmail_quote"><blockquote class="gmail_quote" style="margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex"><div dir="ltr">Hey Phil,&#160;<div><br><div>Sending you the report:&#160;</div></div><div><span class="HOEnZb"><font color="#888888"><br></font></span></div><span class="HOEnZb"><font color="#888888"><div><br></div><div class="gmail_extra">-- <br><div><div dir="ltr"><div>Cheers,</div><div>foo &amp; example Team</div><div><a href="http://www.example.com" target="_blank">www.example.com</a> ; - <a href="mailto:help@example.com" target="_blank">help@example.com</a>&#160;</div></div></div>\r\n</div></font></span></div>\r\n</blockquote></div></div>\r\n'''),
+                (True, u'''<div dir="ltr">looks good\xa0</div><div class="gmail_extra"><br><div class="gmail_quote">On Thu, Dec 18, 2014 at 10:02 AM, foo <span dir="ltr">&lt;<a href="mailto:foo@example.com" target="_blank">foo@example.com</a>&gt;</span> wrote:</div></div>'''),
+                (False, u'''<div class="gmail_extra"><div class="gmail_quote"><blockquote class="gmail_quote" style="margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex"><div dir="ltr">Hey Phil,\xa0<div><br><div>Sending you the report:\xa0</div></div><div><span class="HOEnZb"><font color="#888888"><br></font></span></div><span class="HOEnZb"><font color="#888888"><div><br></div><div class="gmail_extra">-- <br><div><div dir="ltr"><div>Cheers,</div><div>foo &amp; example Team</div><div><a href="http://www.example.com" target="_blank">www.example.com</a> ; - <a href="mailto:help@example.com" target="_blank">help@example.com</a>\xa0</div></div></div>\r\n</div></font></span></div>\r\n</blockquote></div></div>'''),
             ]
         )
 
@@ -117,8 +127,8 @@ class HTMLQuoteTestCase(unittest.TestCase):
         self.assertEqual(
             quote_html(u'''<html xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns:m="http://schemas.microsoft.com/office/2004/12/omml" xmlns="http://www.w3.org/TR/REC-html40"><head></head><body lang=EN-US link=blue vlink=purple><div class=WordSection1><p class=MsoNormal><span style='font-size:11.0pt;font-family:"Calibri","sans-serif";color:#1F497D'>Thanks,<o:p></o:p></span></p><p class=MsoNormal><span style='font-size:11.0pt;font-family:"Calibri","sans-serif";color:#1F497D'><o:p>&nbsp;</o:p></span></p><p class=MsoNormal><span style='font-size:11.0pt;font-family:"Calibri","sans-serif";color:#1F497D'><o:p>&nbsp;</o:p></span></p><div><div style='border:none;border-top:solid #B5C4DF 1.0pt;padding:3.0pt 0in 0in 0in'><p class=MsoNormal><b><span style='font-size:10.0pt;font-family:"Tahoma","sans-serif"'>From:</span></b><span style='font-size:10.0pt;font-family:"Tahoma","sans-serif"'> John Doe [mailto:john@example.com] <br><b>Sent:</b> Tuesday, December 30, 2014 5:31 PM<br><b>To:</b> recipient@example.com<br><b>Subject:</b> Excited to have you on board!<o:p></o:p></span></p></div></div><p class=MsoNormal><o:p>&nbsp;</o:p></p><p>Hey,<o:p></o:p></p></div></body></html>'''),
             [
-                (True, '<html xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns:m="http://schemas.microsoft.com/office/2004/12/omml" xmlns="http://www.w3.org/TR/REC-html40"><head></head><body lang="EN-US" link="blue" vlink="purple"><div class="WordSection1"><p class="MsoNormal"><span style=\'font-size:11.0pt;font-family:"Calibri","sans-serif";color:#1F497D\'>Thanks,<p></p></span></p><p class="MsoNormal"><span style=\'font-size:11.0pt;font-family:"Calibri","sans-serif";color:#1F497D\'><p>&#160;</p></span></p><p class="MsoNormal"><span style=\'font-size:11.0pt;font-family:"Calibri","sans-serif";color:#1F497D\'><p>&#160;</p></span></p><div><div style="border:none;border-top:solid #B5C4DF 1.0pt;padding:3.0pt 0in 0in 0in"></div></div></div></body></html>'),
-                (False, '<html xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns:m="http://schemas.microsoft.com/office/2004/12/omml" xmlns="http://www.w3.org/TR/REC-html40"><body lang="EN-US" link="blue" vlink="purple"><div class="WordSection1"><div><div style="border:none;border-top:solid #B5C4DF 1.0pt;padding:3.0pt 0in 0in 0in"><p class="MsoNormal"><b><span style=\'font-size:10.0pt;font-family:"Tahoma","sans-serif"\'>From:</span></b><span style=\'font-size:10.0pt;font-family:"Tahoma","sans-serif"\'> John Doe [mailto:john@example.com] <br><b>Sent:</b> Tuesday, December 30, 2014 5:31 PM<br><b>To:</b> recipient@example.com<br><b>Subject:</b> Excited to have you on board!<p></p></span></p></div></div><p class="MsoNormal"><p>&#160;</p></p><p>Hey,<p></p></p></div></body></html>')
+                (True, u'<html xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns:m="http://schemas.microsoft.com/office/2004/12/omml" xmlns="http://www.w3.org/TR/REC-html40"><head></head><body lang="EN-US" link="blue" vlink="purple"><div class="WordSection1"><p class="MsoNormal"><span style=\'font-size:11.0pt;font-family:"Calibri","sans-serif";color:#1F497D\'>Thanks,<o:p></o:p></span></p><p class="MsoNormal"><span style=\'font-size:11.0pt;font-family:"Calibri","sans-serif";color:#1F497D\'><o:p>\xa0</o:p></span></p><p class="MsoNormal"><span style=\'font-size:11.0pt;font-family:"Calibri","sans-serif";color:#1F497D\'><o:p>\xa0</o:p></span></p><div></div></div></body></html>'),
+                (False, u'<html xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns:m="http://schemas.microsoft.com/office/2004/12/omml" xmlns="http://www.w3.org/TR/REC-html40"><head></head><body lang="EN-US" link="blue" vlink="purple"><div class="WordSection1"><div><div style="border:none;border-top:solid #B5C4DF 1.0pt;padding:3.0pt 0in 0in 0in"><p class="MsoNormal"><b><span style=\'font-size:10.0pt;font-family:"Tahoma","sans-serif"\'>From:</span></b><span style=\'font-size:10.0pt;font-family:"Tahoma","sans-serif"\'> John Doe [mailto:john@example.com] <br><b>Sent:</b> Tuesday, December 30, 2014 5:31 PM<br><b>To:</b> recipient@example.com<br><b>Subject:</b> Excited to have you on board!<o:p></o:p></span></p></div></div><p class="MsoNormal"><o:p>\xa0</o:p></p><p>Hey,<o:p></o:p></p></div></body></html>')
             ]
         )
 
@@ -136,7 +146,7 @@ class HTMLQuoteTestCase(unittest.TestCase):
             quote_html('''<div>Well hello there Sir!!!<br><br><br>On Dec 23, 2014, at 04:35 PM, Steve Wiseman &lt;wiseman.steve@ymail.com&gt; wrote:<br><blockquote type=\"cite\"><div style=\"color:#000;\"><div dir=\"ltr\">Hi there&nbsp;<img src=\"https://s.yimg.com/ok/u/assets/img/emoticons/emo14.gif\" alt=\"*B-) cool\" title=\"*B-) cool\" class=\"fr-fin\"><img src=\"https://s.yimg.com/ok/u/assets/img/emoticons/emo7.gif\" alt=\"*:P tongue\" title=\"*:P tongue\" class=\"fr-fin\"><img src=\"https://s.yimg.com/ok/u/assets/img/emoticons/emo72.gif\" alt=\"*:->~~ spooky\" title=\"*:->~~ spooky\" class=\"fr-fin\"></div></div></blockquote></div>'''),
             [
                 (True, u'''<div>Well hello there Sir!!!<br><br><br>On Dec 23, 2014, at 04:35 PM, Steve Wiseman &lt;wiseman.steve@ymail.com&gt; wrote:</div>'''),
-                (False, u'''<div><br><blockquote type="cite"><div style="color:#000;"><div dir="ltr">Hi there&#160;<img src=\"https://s.yimg.com/ok/u/assets/img/emoticons/emo14.gif\" alt=\"*B-) cool\" title=\"*B-) cool\" class=\"fr-fin\"><img src=\"https://s.yimg.com/ok/u/assets/img/emoticons/emo7.gif\" alt=\"*:P tongue\" title=\"*:P tongue\" class=\"fr-fin\"><img src=\"https://s.yimg.com/ok/u/assets/img/emoticons/emo72.gif\" alt=\"*:-&gt;~~ spooky\" title=\"*:-&gt;~~ spooky\" class=\"fr-fin\"></div></div></blockquote></div>''')
+                (False, u'''<div><blockquote type="cite"><div style="color:#000;"><div dir="ltr">Hi there\xa0<img src=\"https://s.yimg.com/ok/u/assets/img/emoticons/emo14.gif\" alt=\"*B-) cool\" title=\"*B-) cool\" class=\"fr-fin\"><img src=\"https://s.yimg.com/ok/u/assets/img/emoticons/emo7.gif\" alt=\"*:P tongue\" title=\"*:P tongue\" class=\"fr-fin\"><img src=\"https://s.yimg.com/ok/u/assets/img/emoticons/emo72.gif\" alt=\"*:-&gt;~~ spooky\" title=\"*:-&gt;~~ spooky\" class=\"fr-fin\"></div></div></blockquote></div>''')
             ]
         )
 
@@ -181,6 +191,24 @@ class HTMLQuoteTestCase(unittest.TestCase):
             ]
         )
 
+    def test_comment_3(self):
+        self.assertEqual(
+            quote_html(u'''<!-- test --><br><br>Begin forwarded message:<br><br><!-- test -->'''),
+            [
+                (True, '<!-- test --><br><br>Begin forwarded message:'),
+                (False, '<br><!-- test -->'),
+            ]
+        )
+
+    def test_prefix_tag(self):
+        self.assertEqual(
+            quote_html(u'''A<br>Begin forwarded message:<o:p></o:p>B'''),
+            [
+                (True, 'A<br>Begin forwarded message:'),
+                (False, 'B'),
+            ]
+        )
+
     def test_encoding(self):
         # We assume everything is UTF-8
         self.assertEqual(
@@ -201,7 +229,7 @@ test ä
 <title></title>
 </head>
 <body>
-test &#228;
+test ä
 </body>
 </html>'''),
         ])
@@ -211,13 +239,10 @@ test &#228;
         self.assertEqual(
             quote_html(u'''<html>\r\n<head>\r\n\r\n</head>\r\n<body>\r\n<div style="color: black;">\r\n<div style="color: black;">\r\n<p style="margin: 0 0 1em 0; color: black;">Here is spam.<br>\r\nHam</p>\r\n</div>\r\n<div style="color: black;">\r\n<p\r\nstyle="color: black; font-size: 10pt; font-family: Arial, sans-serif; margin: 10pt 0;">Am\r\n26. Mai 2015 19:20:17 schrieb Spam Foo &lt;spam@example.com&gt;:</p>\r\n<blockquote type="cite" class="gmail_quote"\r\nstyle="margin: 0 0 0 0.75ex; border-left: 1px solid #808080; padding-left: 0.75ex;">Hey\r\nHam,<br><br>I like spam.<br></blockquote>\r\n</div>\r\n</div>\r\n</body>\r\n</html>\r\n'''), [
             (True, '<html>\r\n<head>\r\n\r\n</head>\r\n<body>\r\n<div style="color: black;">\r\n<div style="color: black;">\r\n<p style="margin: 0 0 1em 0; color: black;">Here is spam.<br>\r\nHam</p>\r\n</div>\r\n<div style="color: black;">\r\n<p style="color: black; font-size: 10pt; font-family: Arial, sans-serif; margin: 10pt 0;">Am\r\n26. Mai 2015 19:20:17 schrieb Spam Foo &lt;spam@example.com&gt;:</p></div></div></body></html>'),
-            (False, '<html><body><div style="color: black;"><div style="color: black;">\r\n<blockquote type="cite" class="gmail_quote" style="margin: 0 0 0 0.75ex; border-left: 1px solid #808080; padding-left: 0.75ex;">Hey\r\nHam,<br><br>I like spam.<br></blockquote>\r\n</div>\r\n</div>\r\n</body>\r\n</html>')
+            (False, '<html><head>\r\n\r\n</head>\r\n<body><div style="color: black;"><div style="color: black;"><blockquote type="cite" class="gmail_quote" style="margin: 0 0 0 0.75ex; border-left: 1px solid #808080; padding-left: 0.75ex;">Hey\r\nHam,<br><br>I like spam.<br></blockquote>\r\n</div>\r\n</div>\r\n</body>\r\n</html>')
         ])
 
-
 class UnwrapTestCase(unittest.TestCase):
-    # TODO: Test this function with replies
-
     def test_gmail_forward(self):
         # Gmail forward
         self.assertEqual(unwrap("""Hello
@@ -504,8 +529,13 @@ On 2012-10-16 at 17:02 , Someone <someone@example.com> wrote:
 
 > Some quoted text
 """)
-        # TODO: parsing replies is not fully implemented
-        self.assertEqual(data['type'], 'reply')
+        self.assertEqual(data, {
+            'type': 'reply',
+            'date': '2012-10-16 at 17:02',
+            'from': 'Someone <someone@example.com>',
+            'text_top': 'Hello world.',
+            'text': 'Some quoted text',
+        })
 
     def test_reply_2(self):
         data = unwrap("""Hello world.
@@ -515,8 +545,13 @@ someone@example.com> wrote:
 
 > Some quoted text
 """)
-        # TODO: parsing replies is not fully implemented
-        self.assertEqual(data['type'], 'reply')
+        self.assertEqual(data, {
+            'type': 'reply',
+            'date': '2012-10-16 at 17:02',
+            'from': 'Someone <someone@example.com>',
+            'text_top': 'Hello world.',
+            'text': 'Some quoted text',
+        })
 
     def test_french(self):
         self.assertEqual(unwrap(u"""
@@ -580,7 +615,268 @@ Text after
             'type': 'forward'
         })
 
+class HTMLUnwrapTestCase(FileMixin, unittest.TestCase):
+    def test_simple_forward(self):
+        html = u'Begin forwarded message:<br>\n<br>\nFrom: someone@example.com<br>\nTo: anyone@example.com<br>\nSubject: You won<br>\n'
+        self.assertEqual(unwrap_html(html), {
+            'type': 'forward',
+            'from': 'someone@example.com',
+            'to': 'anyone@example.com',
+            'subject': 'You won',
+        })
 
+    def test_apple_forward(self):
+        html = '<html><head><meta http-equiv="Content-Type" content="text/html charset=utf-8"></head><body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;" class="">test<div class=""><br class=""></div><div class="">blah<br class=""><div><br class=""><div><br class=""><blockquote type="cite" class=""><div class="">Begin forwarded message:</div><br class="Apple-interchange-newline"><div style="margin-top: 0px; margin-right: 0px; margin-bottom: 0px; margin-left: 0px;" class=""><span style="font-family: -webkit-system-font, Helvetica Neue, Helvetica, sans-serif; color:rgba(0, 0, 0, 1.0);" class=""><b class="">From: </b></span><span style="font-family: -webkit-system-font, Helvetica Neue, Helvetica, sans-serif;" class="">Foo Bar &lt;<a href="mailto:foo@bar.example" class="">foo@bar.example</a>&gt;<br class=""></span></div><div style="margin-top: 0px; margin-right: 0px; margin-bottom: 0px; margin-left: 0px;" class=""><span style="font-family: -webkit-system-font, Helvetica Neue, Helvetica, sans-serif; color:rgba(0, 0, 0, 1.0);" class=""><b class="">Subject: </b></span><span style="font-family: -webkit-system-font, Helvetica Neue, Helvetica, sans-serif;" class=""><b class="">The Subject</b><br class=""></span></div><div style="margin-top: 0px; margin-right: 0px; margin-bottom: 0px; margin-left: 0px;" class=""><span style="font-family: -webkit-system-font, Helvetica Neue, Helvetica, sans-serif; color:rgba(0, 0, 0, 1.0);" class=""><b class="">Date: </b></span><span style="font-family: -webkit-system-font, Helvetica Neue, Helvetica, sans-serif;" class="">March 24, 2016 at 20:16:25 GMT+1<br class=""></span></div><div style="margin-top: 0px; margin-right: 0px; margin-bottom: 0px; margin-left: 0px;" class=""><span style="font-family: -webkit-system-font, Helvetica Neue, Helvetica, sans-serif; color:rgba(0, 0, 0, 1.0);" class=""><b class="">To: </b></span><span style="font-family: -webkit-system-font, Helvetica Neue, Helvetica, sans-serif;" class="">John Doe &lt;<a href="mailto:john@doe.example" class="">john@doe.example</a>&gt;<br class=""></span></div><br class=""><div class=""><div dir="ltr" class="">Text of the original email</div>'
+
+        self.assertEqual(unwrap_html(html), {
+            'type': 'forward',
+            'subject': 'The Subject',
+            'date': 'March 24, 2016 at 20:16:25 GMT+1',
+            'from': 'Foo Bar <foo@bar.example>',
+            'to': 'John Doe <john@doe.example>',
+            'html_top': '<html><head></head><body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;" class="">test<div class=""><br class=""></div><div class="">blah</div></body></html>',
+            'html': '<html><head></head><body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;" class=""><div class=""><div><div><div><div class=""><div dir="ltr" class="">Text of the original email</div></div></div></div></div></div></body></html>',
+
+        })
+
+    def test_gmail_forward(self):
+         html = '<html><head></head><body><div dir="ltr">test<div><br></div><div>blah</div><div><br><div class="gmail_quote">---------- Forwarded message ----------<br>From: <b class="gmail_sendername">Foo Bar</b> <span dir="ltr">&lt;<a href="mailto:foo@bar.example">foo@bar.example</a>&gt;</span><br>Date: Thu, Mar 24, 2016 at 5:17 PM<br>Subject: The Subject<br>To: John Doe &lt;<a href="mailto:john@doe.example">john@doe.example</a>&gt;<br><br><br><div dir="ltr">Some text<div><br></div><div><br></div></div></div><br></div></div></body></html>'
+
+         self.assertEqual(unwrap_html(html), {
+            'type': 'forward',
+            'subject': 'The Subject',
+            'date': 'Thu, Mar 24, 2016 at 5:17 PM',
+            'from': 'Foo Bar <foo@bar.example>',
+            'to': 'John Doe <john@doe.example>',
+            'html_top': '<html><head></head><body><div dir="ltr">test<div><br></div><div>blah</div></div></body></html>',
+            'html': '<html><head></head><body><div dir="ltr"><div><div class="gmail_quote"><div dir="ltr">Some text</div></div></div></div></body></html>',
+         })
+
+    def test_apple_reply(self):
+        html = '<html><head><meta http-equiv="Content-Type" content="text/html charset=us-ascii"></head><body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;" class="">Foo<div class=""><br class=""></div><div class="">Bar</div><div class=""><br class=""></div><div class=""><div><blockquote type="cite" class=""><div class="">On 2016-03-25, at 23:01, John Doe &lt;<a href="mailto:john@doe.example" class="">john@doe.example</a>&gt; wrote:</div><br class="Apple-interchange-newline"><div class=""><meta http-equiv="Content-Type" content="text/html charset=us-ascii" class=""><div style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;" class="">Some <b class="">important</b> email<br class=""></div></div></blockquote></div><br class=""></div></body></html>'
+
+        self.assertEqual(unwrap_html(html), {
+            'type': 'reply',
+            'from': 'John Doe <john@doe.example>',
+            'date': '2016-03-25, at 23:01',
+            'html': '<html><head></head><body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;" class=""><div class=""><div><div><div class=""><div style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;" class="">Some <b class="">important</b> email</div></div></div></div></div></body></html>',
+            'html_top': '<html><head></head><body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;" class="">Foo<div class=""><br class=""></div><div class="">Bar</div></body></html>',
+        })
+
+    def test_gmail_reply(self):
+        html = '''<html><head></head><body><div dir="ltr">foo<div><br></div><div>bar</div></div><div class="gmail_extra"><br><div class="gmail_quote">On Wed, Mar 16, 2016 at 12:49 AM, Foo Bar <span dir="ltr">&lt;<a href="mailto:foo@bar.example" target="_blank">foo@bar.example</a>&gt;</span> wrote:<br><blockquote class="gmail_quote" style="margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex">Hi,<br>
+<br>This is the reply<br>
+<br>
+Thanks a lot!<br>
+<span class="HOEnZb"><font color="#888888">Foo<br>
+<br>
+</font></span></blockquote></div><br><br clear="all"><div><br></div>-- <br><div class="gmail_signature"><div dir="ltr"><div><div dir="ltr"><b>John Doe</b></div><div dir="ltr"><b>Senior Director</b><div>Some Company</div></div></div></div></div>
+</div>
+</body></html>'''
+
+        self.assertEqual(unwrap_html(html), {
+            'type': 'reply',
+            'from': 'Foo Bar <foo@bar.example>',
+            'date': 'Wed, Mar 16, 2016 at 12:49 AM',
+            'html_top': '<html><head></head><body><div dir="ltr">foo<div><br></div><div>bar</div></div></body></html>',
+            'html': '<html><head></head><body><div class="gmail_extra"><div class="gmail_quote"><div>Hi,<br>\n<br>This is the reply<br>\n<br>\nThanks a lot!<br>\n<span class="HOEnZb"><font color="#888888">Foo</font></span></div></div></div></body></html>',
+            'html_bottom': '<html><head></head><body><div class="gmail_extra">-- <br><div class="gmail_signature"><div dir="ltr"><div><div dir="ltr"><b>John Doe</b></div><div dir="ltr"><b>Senior Director</b><div>Some Company</div></div></div></div></div>\n</div>\n</body></html>',
+        })
+
+    def test_outlook_forward(self):
+        data = self.read_file('outlook_forward.html')
+        result = unwrap_html(data)
+        self.assertEqual(result['type'], 'forward')
+        self.assertEqual(result['from'], 'John Doe')
+        self.assertEqual(result['to'], 'Foo Bar (foo@bar.example)')
+        self.assertEqual(result['date'], 'Wednesday, July 09, 2014 10:27 AM')
+        self.assertEqual(result['subject'], 'The subject!')
+        self.assert_equal_to_file(result['html'],
+                                  'outlook_forward_unwrapped.html')
+        self.assert_equal_to_file(result['html_top'],
+                                  'outlook_forward_unwrapped_top.html')
+
+class InternalTestCase(unittest.TestCase):
+    def test_parse_reply(self):
+
+        from quotequail._internal import parse_reply
+
+        data = parse_reply(u'Am 24.02.2015 um 22:48 schrieb John Doe <john@doe.example>:')
+        self.assertEqual(data, {
+            'date': u'24.02.2015 um 22:48',
+            'from': u'John Doe <john@doe.example>'
+        })
+
+        data = parse_reply(u'On Monday, March 7, 2016 10:19 AM, John Doe <john@doe.example> wrote:')
+        self.assertEqual(data, {
+            'date': u'Monday, March 7, 2016 10:19 AM',
+            'from': u'John Doe <john@doe.example>'
+        })
+
+        data = parse_reply(u'On Feb 22, 2015, at 9:19 PM, John Doe <john@doe.example> wrote:')
+        self.assertEqual(data, {
+            'date': u'Feb 22, 2015, at 9:19 PM',
+            'from': u'John Doe <john@doe.example>'
+        })
+
+        data = parse_reply(u'On 2016-03-14, at 20:26, John Doe <john@doe.example> wrote:')
+        self.assertEqual(data, {
+            'date': u'2016-03-14, at 20:26',
+            'from': u'John Doe <john@doe.example>'
+        })
+
+        data = parse_reply(u'Le 6 janv. 2014 à 19:50, John Doe <john@doe.example> a écrit :')
+        self.assertEqual(data, {
+            'date': u'6 janv. 2014 \xe0 19:50',
+            'from': u'John Doe <john@doe.example>'
+        })
+
+        data = parse_reply(u'Le 02.10.2013 à 11:13, John Doe <john@doe.example> a écrit :')
+        self.assertEqual(data, {
+            'date': u'02.10.2013 \xe0 11:13',
+            'from': u'John Doe <john@doe.example>'
+        })
+
+        data = parse_reply(u'El 11/07/2012 06:13 p.m., John Doe escribió:')
+        self.assertEqual(data, {
+            'date': u'11/07/2012 06:13 p.m.',
+            'from': u'John Doe'
+        })
+
+        data = parse_reply(u'El 06/04/2010, a las 13:13, John Doe escribió:')
+        self.assertEqual(data, {
+            'date': u'06/04/2010, a las 13:13',
+            'from': u'John Doe'
+        })
+
+        data = parse_reply(u'2009/5/12 John Doe <john@doe.example>')
+        self.assertEqual(data, {
+            'date': u'2009/5/12',
+            'from': u'John Doe <john@doe.example>'
+        })
+
+        data = parse_reply(u"On 8 o'clock, John Doe wrote:")
+        self.assertEqual(data, {
+            'date': u"8 o'clock",
+            'from': u'John Doe'
+        })
+
+class InternalHTMLTestCase(unittest.TestCase):
+    def test_extract_headers(self):
+        from quotequail._internal import extract_headers
+        self.assertEqual(
+            extract_headers([], 2),
+            ({}, 0)
+        )
+        self.assertEqual(
+            extract_headers(['test'], 2),
+            ({}, 0)
+        )
+        self.assertEqual(
+            extract_headers(['From: b', 'To: c'], 2),
+            ({'from': 'b', 'to': 'c'}, 2)
+        )
+        self.assertEqual(
+            extract_headers(['From: b', 'foo'], 2),
+            ({'from': 'b foo'}, 2)
+        )
+        self.assertEqual(
+            extract_headers(['From: b', 'foo'], 1),
+            ({'from': 'b'}, 1)
+        )
+        self.assertEqual(
+            extract_headers(['From: b', 'To: c', '', 'other line'], 2),
+            ({'from': 'b', 'to': 'c'}, 2)
+        )
+        self.assertEqual(
+            extract_headers(['From: some very very very long name <',
+                             'verylong@example.com>',
+                             'Subject: this is a very very very very long',
+                             'subject',
+                             '',
+                             'other line'], 2),
+            ({'from': 'some very very very long name <verylong@example.com>',
+              'subject': 'this is a very very very very long subject'}, 4)
+        )
+        self.assertEqual(
+            extract_headers(['From: some very very very long name <',
+                             'verylong@example.com>'], 1),
+            ({'from': 'some very very very long name <',}, 1)
+        )
+
+    def test_tree_line_generator(self):
+        from quotequail import _html
+
+        tree = _html.get_html_tree('<div>foo <span>bar</span><br>baz</div>')
+        data = [result for result in _html.tree_line_generator(tree)]
+        div = tree.xpath('div')[0]
+        br = tree.xpath('div/br')[0]
+        span = tree.xpath('div/span')[0]
+        self.assertEqual(data, [
+            ((div, 'begin'), (br, 'begin'), 0, 'foo bar'),
+            ((br, 'end'), (div, 'end'), 0, 'baz'),
+        ])
+
+        tree = _html.get_html_tree('<div><h1>foo</h1>bar</div>')
+        data = [result for result in _html.tree_line_generator(tree)]
+        div = tree.xpath('div')[0]
+        h1 = tree.xpath('div/h1')[0]
+        self.assertEqual(data, [
+            ((h1, 'begin'), (h1, 'end'), 0, 'foo'),
+            ((h1, 'end'), (div, 'end'), 0, 'bar'),
+        ])
+
+        tree = _html.get_html_tree(
+                '<div><blockquote>hi</blockquote>world</div>')
+        data = [result for result in _html.tree_line_generator(tree)]
+        div = tree.xpath('div')[0]
+        blockquote = tree.xpath('div/blockquote')[0]
+        self.assertEqual(data, [
+            ((blockquote, 'begin'), (blockquote, 'end'), 1, 'hi'),
+            ((blockquote, 'end'), (div, 'end'), 0, 'world'),
+        ])
+
+    def test_trim_after(self):
+        from quotequail import _html
+
+        html = '<div>A<span>B</span>C<span>D</span>E</div>'
+
+        tree = _html.get_html_tree(html)
+        _html.trim_tree_after(tree.find('div/span'))
+        self.assertEqual(_html.render_html_tree(tree), '<div>A<span>B</span></div>')
+
+        tree = _html.get_html_tree(html)
+        _html.trim_tree_after(tree.find('div/span[2]'))
+        self.assertEqual(_html.render_html_tree(tree), '<div>A<span>B</span>C<span>D</span></div>')
+
+        tree = _html.get_html_tree(html)
+        _html.trim_tree_after(tree.find('div/span'), include_element=False)
+        self.assertEqual(_html.render_html_tree(tree), '<div>A</div>')
+
+        tree = _html.get_html_tree(html)
+        _html.trim_tree_after(tree.find('div/span[2]'), include_element=False)
+        self.assertEqual(_html.render_html_tree(tree), '<div>A<span>B</span>C</div>')
+
+    def test_trim_before(self):
+        from quotequail import _html
+
+        html = '<div>A<span>B</span>C<span>D</span>E</div>'
+
+        tree = _html.get_html_tree(html)
+        _html.trim_tree_before(tree.find('div/span'))
+        self.assertEqual(_html.render_html_tree(tree), '<div><span>B</span>C<span>D</span>E</div>')
+
+        tree = _html.get_html_tree(html)
+        _html.trim_tree_before(tree.find('div/span[2]'))
+        self.assertEqual(_html.render_html_tree(tree), '<div><span>D</span>E</div>')
+
+        tree = _html.get_html_tree(html)
+        _html.trim_tree_before(tree.find('div/span'), include_element=False)
+        self.assertEqual(_html.render_html_tree(tree), '<div>C<span>D</span>E</div>')
+
+        tree = _html.get_html_tree(html)
+        _html.trim_tree_before(tree.find('div/span[2]'), include_element=False)
+        self.assertEqual(_html.render_html_tree(tree), '<div>E</div>')
 
 if __name__ == '__main__':
     unittest.main()

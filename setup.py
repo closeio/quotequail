@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='quotequail',
-    version='0.1.1',
+    version='0.2',
     url='http://github.com/closeio/quotequail',
     license='MIT',
     author='Thomas Steinacher',
@@ -18,12 +18,15 @@ setup(
     tests_require=['lxml'],
     platforms='any',
     classifiers=[
-        'Development Status :: 4 - Beta',
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.5',
         'Topic :: Communications :: Email',
         'Topic :: Software Development :: Libraries :: Python Modules'
     ]
