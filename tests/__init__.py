@@ -204,8 +204,16 @@ class HTMLQuoteTestCase(unittest.TestCase):
         self.assertEqual(
             quote_html(u'''A<br>Begin forwarded message:<o:p></o:p>B'''),
             [
-                (True, 'A<br>Begin forwarded message:'),
-                (False, 'B'),
+                (True, 'A<br>Begin forwarded message:<o:p></o:p>B'),
+            ]
+        )
+
+    def test_prefix_tag_2(self):
+        # We can't preserve the exact markup due to lxml's parsing here.
+        self.assertEqual(
+            quote_html(u'''A<br>Begin forwarded message:<http://test>B'''),
+            [
+                (True, 'A<br>Begin forwarded message:<http:>B</http:>'),
             ]
         )
 

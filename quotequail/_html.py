@@ -182,6 +182,20 @@ def get_html_tree(html):
         html = b'<div>%s</div>' % html
         tree = lxml.html.fromstring(html, parser=parser)
 
+    # HACK for Outlook emails, where tags like <o:p> are rendered as <p>. We
+    # can generally ignore these tags so we replace them with <span>, which
+    # doesn't cause a line break. Also, we can't look up the element path of
+    # tags that contain colons. When rendering the tree, we will restore the
+    # tag name.
+    for el in tree.iter():
+        if el.nsmap or (isinstance(el.tag, string_class) and ':' in el.tag):
+            if el.nsmap:
+                actual_tag_name = '{}:{}'.format(list(el.nsmap.keys())[0], el.tag)
+            else:
+                actual_tag_name = el.tag
+            el.tag = 'span'
+            el.attrib['__tag_name'] = actual_tag_name
+
     return tree
 
 def strip_wrapping(html):
@@ -201,12 +215,14 @@ def render_html_tree(tree):
     method because we modify namespaced tags here.
     """
 
-    # HACK for Outlook emails, where tags like <o:p> are rendered as <p>.
+    # Restore any tag names that were changed in get_html_tree()
     for el in tree.iter():
-        if el.nsmap:
-            el.tag = '{}:{}'.format(list(el.nsmap.keys())[0], el.tag)
+        if '__tag_name' in el.attrib:
+            actual_tag_name = el.attrib.pop('__tag_name')
+            el.tag = actual_tag_name
 
     html = lxml.html.tostring(tree, encoding='utf8').decode('utf8')
+
     return strip_wrapping(html)
 
 def is_indentation_element(element):
