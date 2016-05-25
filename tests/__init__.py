@@ -703,6 +703,20 @@ Thanks a lot!<br>
                                   'outlook_forward_unwrapped.html')
         self.assert_equal_to_file(result['html_top'],
                                   'outlook_forward_unwrapped_top.html')
+        self.assertNotIn('html_bottom', result)
+
+    def test_thunderbird_forward(self):
+        data = self.read_file('thunderbird_forward.html')
+        result = unwrap_html(data)
+        self.assertEqual(result['type'], 'forward')
+        self.assertEqual(result['from'], 'John Doe <johndoe@example.com>')
+        self.assertEqual(result['to'], 'Foo Bar <foobar@example.com>')
+        self.assertEqual(result['date'], 'Tue, 3 May 2016 14:54:27 +0200 (CEST)')
+        self.assertEqual(result['subject'], 'Re: Example subject')
+        self.assertNotIn('html_top', result)
+        self.assert_equal_to_file(result['html'],
+                                  'thunderbird_forward_unwrapped.html')
+        self.assertNotIn('html_bottom', result)
 
 class InternalTestCase(unittest.TestCase):
     def test_parse_reply(self):
@@ -842,6 +856,18 @@ class InternalHTMLTestCase(unittest.TestCase):
         self.assertEqual(data, [
             ((blockquote, 'begin'), (blockquote, 'end'), 1, 'hi'),
             ((blockquote, 'end'), (div, 'end'), 0, 'world'),
+        ])
+
+        tree = _html.get_html_tree('''
+            <table>
+                <tr><td>Subject: </td><td>the subject</td></tr>
+                <tr><td>From: </td><td>from line</td></tr>
+            </table>''')
+        data = [result for result in _html.tree_line_generator(tree)]
+        tr1, tr2 = tree.xpath('table/tr')
+        self.assertEqual(data, [
+            ((tr1, 'begin'), (tr1, 'end'), 0, 'Subject: the subject'),
+            ((tr2, 'begin'), (tr2, 'end'), 0, 'From: from line'),
         ])
 
     def test_trim_after(self):

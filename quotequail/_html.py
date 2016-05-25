@@ -6,7 +6,7 @@ import lxml.etree
 from ._patterns import FORWARD_LINE, FORWARD_STYLES, MULTIPLE_WHITESPACE_RE
 
 INLINE_TAGS = ['a', 'b', 'em', 'i', 'strong', 'span', 'font', 'q',
-               'object', 'bdo', 'sub', 'sup', 'center']
+               'object', 'bdo', 'sub', 'sup', 'center', 'td', 'th']
 
 BEGIN = 'begin'
 END = 'end'
@@ -151,11 +151,22 @@ def slice_tree(tree, start_refs, end_refs, slice_tuple, html_copy=None):
         new_tree = tree
 
     if start_ref:
-        trim_tree_before(start_ref[0],
-                        include_element=(start_ref[1] == BEGIN))
+        include_start = (start_ref[1] == BEGIN)
     if end_ref:
-        trim_tree_after(end_ref[0],
-                       include_element=(end_ref[1] == END))
+        include_end = (end_ref[1] == END)
+
+    # If start_ref is the same as end_ref, and we don't include the element,
+    # we are removing the entire tree. We need to handle this separately,
+    # otherwise trim_tree_after won't work because it can't find the already
+    # removed reference.
+    if start_ref and end_ref and start_ref[0] == end_ref[0]:
+        if not include_start or not include_end:
+            return get_html_tree('')
+
+    if start_ref:
+        trim_tree_before(start_ref[0], include_element=include_start)
+    if end_ref:
+        trim_tree_after(end_ref[0], include_element=include_end)
 
     return new_tree
 
