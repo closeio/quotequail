@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='quotequail',
-    version='0.2.1',
+    version='0.2.2',
     url='http://github.com/closeio/quotequail',
     license='MIT',
     author='Thomas Steinacher',
