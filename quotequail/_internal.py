@@ -22,7 +22,7 @@ def find_pattern_on_line(lines, n, max_wrap_lines):
                 match_line = ''.join(lines[n:n+1+m])
                 if match_line.startswith('>'):
                     match_line = match_line[1:].strip()
-                if re.match(regex, match_line.strip()):
+                if regex.match(match_line.strip()):
                     return n+m, typ
     return None, None
 
