@@ -88,6 +88,12 @@ Some quoted text.
              (False, '>\n> From: Someone <someone@example.com>\n> Subject: The email\n>\n> Some quoted text.\n')]
         )
 
+    def test_limit(self):
+        self.assertEqual(
+            quote("Lorem\nIpsum\nDolor\nSit\nAmet", limit=2),
+            [(True, 'Lorem\nIpsum'), (False, 'Dolor\nSit\nAmet')]
+        )
+
 class HTMLQuoteTestCase(unittest.TestCase):
     def test_apple(self):
         self.assertEqual(
@@ -837,6 +843,12 @@ class InternalHTMLTestCase(unittest.TestCase):
         self.assertEqual(data, [
             ((div, 'begin'), (br, 'begin'), 0, 'foo bar'),
             ((br, 'end'), (div, 'end'), 0, 'baz'),
+        ])
+        data = [result for result in _html.tree_line_generator(tree, max_lines=1)]
+        div = tree.xpath('div')[0]
+        br = tree.xpath('div/br')[0]
+        self.assertEqual(data, [
+            ((div, 'begin'), (br, 'begin'), 0, 'foo bar'),
         ])
 
         tree = _html.get_html_tree('<div><h1>foo</h1>bar</div>')

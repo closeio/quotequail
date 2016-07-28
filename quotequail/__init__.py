@@ -23,7 +23,7 @@ def quote(text, limit=1000):
 
     lines = text.split('\n')
 
-    found = _internal.find_quote_position(lines, _patterns.MAX_WRAP_LINES)
+    found = _internal.find_quote_position(lines, _patterns.MAX_WRAP_LINES, limit)
 
     if found != None:
         return [(True, '\n'.join(lines[:found+1])), (False, '\n'.join(lines[found+1:]))]
