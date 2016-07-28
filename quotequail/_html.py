@@ -311,6 +311,10 @@ def tree_line_generator(el, max_lines=None):
     def _trim_spaces(text):
         return MULTIPLE_WHITESPACE_RE.sub(' ', text).strip()
 
+    counter = 1
+    if max_lines != None and counter > max_lines:
+        return
+
     # Buffer for the current line.
     line = ''
 
@@ -340,12 +344,18 @@ def tree_line_generator(el, max_lines=None):
                 if line or line_break or is_forward:
                     end_ref = (el, state)
                     yield start_ref, end_ref, start_indentation_level, line
+                    counter += 1
+                    if max_lines != None and counter > max_lines:
+                        return
                     line = ''
 
                     if is_forward:
                         # Simulate forward
                         yield (end_ref, end_ref, start_indentation_level,
                                FORWARD_LINE)
+                        counter += 1
+                        if max_lines != None and counter > max_lines:
+                            return
 
                 if not line:
                     start_ref = (el, state)
