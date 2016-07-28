@@ -88,6 +88,12 @@ Some quoted text.
              (False, '>\n> From: Someone <someone@example.com>\n> Subject: The email\n>\n> Some quoted text.\n')]
         )
 
+    def test_limit(self):
+        self.assertEqual(
+            quote("Lorem\nIpsum\nDolor\nSit\nAmet", limit=2),
+            [(True, 'Lorem\nIpsum'), (False, 'Dolor\nSit\nAmet')]
+        )
+
 class HTMLQuoteTestCase(unittest.TestCase):
     def test_apple(self):
         self.assertEqual(
