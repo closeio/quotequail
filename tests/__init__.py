@@ -724,6 +724,19 @@ Thanks a lot!<br>
                                   'thunderbird_forward_unwrapped.html')
         self.assertNotIn('html_bottom', result)
 
+    def test_mailru_forward(self):
+        data = self.read_file('mailru_forward.html')
+        result = unwrap_html(data)
+        self.assertEqual(result['type'], 'forward')
+        self.assertEqual(result['from'], u'Иван Иванов <ivanivanov@example.com>')
+        self.assertEqual(result['to'], u'Петр Петров <petrpetrov@example.com>')
+        self.assertEqual(result['date'], u'Среда, 14 июня 2017, 15:19 +03:00')
+        self.assertEqual(result['subject'], u'Тестовая тема')
+        self.assertNotIn('html_top', result)
+        self.assert_equal_to_file(result['html'],
+                                  'mailru_forward_unwrapped.html')
+        self.assertNotIn('html_bottom', result)
+
 class InternalTestCase(unittest.TestCase):
     def test_parse_reply(self):
 
