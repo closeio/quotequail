@@ -26,6 +26,9 @@ FORWARD_MESSAGES = [
 
     # Thunderbird forward
     u'Message transféré',
+
+    # mail.ru forward (Russian)
+    u'Пересылаемое сообщение',
 ]
 
 # We yield this pattern to simulate Outlook forward styles. It is also used for
@@ -49,12 +52,14 @@ HEADER_MAP = {
     'from': 'from',
     'von': 'from',
     'de': 'from',
+    u'от кого': 'from',
 
     'to': 'to',
     'an': 'to',
     'para': 'to',
     u'à': 'to',
     u'pour': 'to',
+    u'кому': 'to',
 
     'cc': 'cc',
     'kopie': 'cc',
@@ -76,12 +81,14 @@ HEADER_MAP = {
     'enviado el': 'date',
     'enviados': 'date',
     'fecha': 'date',
+    u'дата': 'date',
 
     'subject': 'subject',
     'betreff': 'subject',
     'asunto': 'subject',
     'objet': 'subject',
     'sujet': 'subject',
+    u'тема': 'subject',
 }
 
 COMPILED_PATTERN_MAP = {
