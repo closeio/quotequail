@@ -8,6 +8,7 @@ REPLY_PATTERNS = [
     u'^Le (.*) a écrit :$', # French
     u'El (.*) escribió:$', # Spanish
     u'^(.*) написал\(а\):$',  # Russian
+    u'^Den (.*) skrev (.*):$', # Swedish
     u'([0-9]{4}/[0-9]{1,2}/[0-9]{1,2}) (.* <.*@.*>)$', # gmail (?) reply
 ]
 
@@ -19,7 +20,7 @@ FORWARD_MESSAGES = [
     u'Début du message réexpédié', 'Inicio del mensaje reenviado',
 
     # gmail/evolution forward
-    'Forwarded [mM]essage', 'Mensaje reenviado',
+    'Forwarded [mM]essage', 'Mensaje reenviado', 'Vidarebefordrat meddelande',
 
     # outlook
     'Original [mM]essage', 'Ursprüngliche Nachricht', 'Mensaje [oO]riginal',
@@ -53,6 +54,7 @@ HEADER_MAP = {
     'von': 'from',
     'de': 'from',
     u'от кого': 'from',
+    u'från': 'from',
 
     'to': 'to',
     'an': 'to',
@@ -60,9 +62,11 @@ HEADER_MAP = {
     u'à': 'to',
     u'pour': 'to',
     u'кому': 'to',
+    u'till': 'to',
 
     'cc': 'cc',
     'kopie': 'cc',
+    'kopia': 'cc',
 
     'bcc': 'bcc',
     'cco': 'bcc',
@@ -89,6 +93,7 @@ HEADER_MAP = {
     'objet': 'subject',
     'sujet': 'subject',
     u'тема': 'subject',
+    u'ämne': 'subject',
 }
 
 COMPILED_PATTERN_MAP = {
