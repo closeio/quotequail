@@ -41,6 +41,20 @@ someone@example.com> wrote:
              (False, '\n> Some quoted text\n')]
         )
 
+    def test_quote_reply_3(self):
+        self.assertEqual(
+            quote(
+"""Hello world.
+
+On 2012-10-16 at 17:02 , Someone <someone@example.com>
+wrote:
+
+> Some quoted text
+"""),
+            [(True, 'Hello world.\n\nOn 2012-10-16 at 17:02 , Someone <someone@example.com>\nwrote:'),
+             (False, '\n> Some quoted text\n')]
+        )
+
     def test_quote_forward_1(self):
         self.assertEqual(
             quote(
