@@ -643,6 +643,28 @@ Text after
             'type': 'forward'
         })
 
+    def test_gmail_forward_swedish(self):
+        # Gmail forward
+        self.assertEqual(unwrap(u"""Hello
+
+---------- Vidarebefordrat meddelande ----------
+Från: Someone <noreply@example.com>
+Datum: 26 april 2013 20:13
+Ämne: Weekend Spanish classes
+Till: recipient@example.com
+
+Spanish Classes
+Learn Spanish
+"""), {
+            'text_top': u'Hello',
+            'type': u'forward',
+            'from': u'Someone <noreply@example.com>',
+            'date': u'26 april 2013 20:13',
+            'subject': u'Weekend Spanish classes',
+            'to': u'recipient@example.com',
+            'text': u'Spanish Classes\nLearn Spanish',
+        })
+
 class HTMLUnwrapTestCase(FileMixin, unittest.TestCase):
     def test_simple_forward(self):
         html = u'Begin forwarded message:<br>\n<br>\nFrom: someone@example.com<br>\nTo: anyone@example.com<br>\nSubject: You won<br>\n'
@@ -815,6 +837,14 @@ class InternalTestCase(unittest.TestCase):
             'date': u"8 o'clock",
             'from': u'John Doe'
         })
+
+        # Swedish
+        data = parse_reply(u'Den 24 februari 2015 22:48 skrev John Doe <john@doe.example>:')
+        self.assertEqual(data, {
+            'date': u'24 februari 2015 22:48',
+            'from': u'John Doe <john@doe.example>'
+        })
+
 
 class InternalHTMLTestCase(unittest.TestCase):
     def test_extract_headers(self):
