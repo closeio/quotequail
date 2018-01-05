@@ -355,6 +355,28 @@ Text bottom
             'text': 'OHAI\n\nGreat news!',
             'text_bottom': 'Text bottom',
         })
+    def test_gmail_reply_two_line(self):
+        self.assertEqual(unwrap("""did you really mean to say that? (this is the response).
+
+On Thu, Jan 4, 2018 at 11:17 AM, Boo Radley
+wrote:
+
+> and this is the body
+>
+
+
+
+--
+Boo Radley
+867-5309
+"""), {
+            'text_top': 'did you really mean to say that? (this is the response).',
+            'type': 'reply',
+            'date': 'Thu, Jan 4, 2018 at 11:17 AM',
+            'from': 'Boo Radley',
+            'text_bottom': '--\nBoo Radley\n867-5309',
+            'text': 'and this is the body',
+        })
 
     def test_bold_headers(self):
         # Forwrad with *bold* text
