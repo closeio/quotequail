@@ -20,6 +20,7 @@ def find_pattern_on_line(lines, n, max_wrap_lines):
         for regex in regexes:
             for m in range(max_wrap_lines):
                 match_line = ' '.join(lines[n:n+1+m])
+                # match_line = join_wrapped_lines(lines[n:n+1+m])
                 if match_line.startswith('>'):
                     match_line = match_line[1:].strip()
                 if regex.match(match_line.strip()):
@@ -75,6 +76,9 @@ def extract_headers(lines, max_wrap_lines):
 
     for n, line in enumerate(lines):
         if not line.strip():
+            if extend_lines > 0:
+                lines_processed = n+1
+                break
             header_name = None
             continue
 
@@ -89,7 +93,7 @@ def extract_headers(lines, max_wrap_lines):
             lines_processed = n+1
         else:
             extend_lines += 1
-            if extend_lines < max_wrap_lines and header_name in HEADER_MAP:
+            if extend_lines < (max_wrap_lines + 1) and header_name in HEADER_MAP:
                 hdrs[HEADER_MAP[header_name]] = join_wrapped_lines(
                         [hdrs[HEADER_MAP[header_name]], line.strip()])
                 lines_processed = n+1
