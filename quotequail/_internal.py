@@ -19,7 +19,7 @@ def find_pattern_on_line(lines, n, max_wrap_lines):
     for typ, regexes in COMPILED_PATTERN_MAP.items():
         for regex in regexes:
             for m in range(max_wrap_lines):
-                match_line = ' '.join(lines[n:n+1+m])
+                match_line = join_wrapped_lines(lines[n:n+1+m])
                 if match_line.startswith('>'):
                     match_line = match_line[1:].strip()
                 if regex.match(match_line.strip()):
