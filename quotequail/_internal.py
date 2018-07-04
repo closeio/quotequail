@@ -262,7 +262,7 @@ def unwrap(lines, max_wrap_lines, min_header_lines, min_quoted_lines):
         else:
             # Didn't find quoted section or headers, assume that everything
             # below is the qouted text.
-            return main_type, (0, start), headers, (start+(start2 or 0)+1, None), None, False
+            return main_type, (0, start), headers, (end+(start2 or 0)+1, None), None, False
 
     # We just found headers, which usually indicates a forwarding.
     elif typ == 'headers':
