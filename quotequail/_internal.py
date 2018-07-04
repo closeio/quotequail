@@ -283,4 +283,4 @@ def unwrap(lines, max_wrap_lines, min_header_lines, min_quoted_lines):
             return main_type, (0, start), hdrs, (rest2_start, rest_start), (rest_start, None), True
         else:
             main_type = 'quote'
-            return main_type, (None, start), None, (start, rest_start), (rest_start, None), True
+            return main_type, (0, start), None, (start, rest_start), (rest_start, None), True
