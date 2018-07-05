@@ -116,7 +116,9 @@ def slice_tree(tree, start_refs, end_refs, slice_tuple, html_copy=None):
         slice_start, slice_end = slice_tuple
 
         if ((slice_start is not None and slice_start >= len(start_refs)) or
-            (slice_end is not None and slice_end <= 0)):
+            (slice_end is not None and slice_end <= 0) or
+            (slice_start is not None and slice_end is not None and
+                slice_end <= slice_start)):
             return get_html_tree('')
 
         if slice_start != None and slice_start <= 0:

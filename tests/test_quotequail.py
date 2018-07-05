@@ -293,6 +293,26 @@ Learn Spanish
             'text': 'Spanish Classes\nLearn Spanish',
         })
 
+    def test_gmail_forward_no_message(self):
+        # No more Hello message at the beginning, unlike test_gmail_forward
+        self.assertEqual(unwrap("""
+---------- Forwarded message ----------
+From: Someone <noreply@example.com>
+Date: Fri, Apr 26, 2013 at 8:13 PM
+Subject: Weekend Spanish classes
+To: recipient@example.com
+
+Spanish Classes
+Learn Spanish
+"""), {
+            'type': 'forward',
+            'from': 'Someone <noreply@example.com>',
+            'date': 'Fri, Apr 26, 2013 at 8:13 PM',
+            'subject': 'Weekend Spanish classes',
+            'to': 'recipient@example.com',
+            'text': 'Spanish Classes\nLearn Spanish',
+        })
+
     def test_apple_forward(self):
         # Apple Mail (10.9 and earlier) forward
         self.assertEqual(unwrap("""Hello
@@ -700,6 +720,32 @@ class HTMLUnwrapTestCase(FileMixin, unittest.TestCase):
             'to': 'John Doe <john@doe.example>',
             'html_top': '<html><head></head><body><div dir="ltr">test<div><br></div><div>blah</div></div></body></html>',
             'html': '<html><head></head><body><div dir="ltr"><div><div class="gmail_quote"><div dir="ltr">Some text</div></div></div></div></body></html>',
+         })
+
+    def test_gmail_forward_no_message(self):
+        html = '''
+<html>
+    <head></head>
+    <body>
+        <div dir="ltr">
+            <div><br><div class="gmail_quote">---------- Forwarded message ----------<br>
+                From: <b class="gmail_sendername">Foo Bar</b> <span dir="ltr">&lt;<a href="mailto:foo@bar.example">foo@bar.example</a>&gt;</span><br>
+                Date: Thu, Mar 24, 2016 at 5:17 PM<br>
+                Subject: The Subject<br>
+                To: John Doe &lt;<a href="mailto:john@doe.example">john@doe.example</a>&gt;<br><br><br>
+                <div dir="ltr">Some text<div><br></div><div><br></div></div></div><br>
+            </div>
+        </div>
+    </body>
+</html>'''
+
+        self.assertEqual(unwrap_html(html), {
+            'type': 'forward',
+            'subject': 'The Subject',
+            'date': 'Thu, Mar 24, 2016 at 5:17 PM',
+            'from': 'Foo Bar <foo@bar.example>',
+            'to': 'John Doe <john@doe.example>',
+            'html': '<html><head></head>\n    <body><div dir="ltr"><div><div class="gmail_quote"><div dir="ltr">Some text</div></div></div></div></body></html>',
          })
 
     def test_apple_reply(self):
