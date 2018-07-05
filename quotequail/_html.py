@@ -7,6 +7,9 @@ from ._patterns import FORWARD_LINE, FORWARD_STYLES, MULTIPLE_WHITESPACE_RE
 
 INLINE_TAGS = ['a', 'b', 'em', 'i', 'strong', 'span', 'font', 'q',
                'object', 'bdo', 'sub', 'sup', 'center', 'td', 'th']
+# replaced by binary data, so should be preserved in HTML no matter the text
+# around it.
+REPLACED_TAGS = ['img']
 
 BEGIN = 'begin'
 END = 'end'
@@ -53,7 +56,13 @@ def trim_tree_before(element, include_element=True, keep_head=True):
                 parent_el.remove(remove_el)
         el = parent_el
 
-def trim_slice(lines, slice_tuple):
+def is_replaced(el):
+    return (
+        isinstance(el.tag, string_class) and
+        el.tag.lower() in REPLACED_TAGS
+    )
+
+def trim_slice(lines, slice_tuple, start_refs, end_refs):
     """
     Trim a slice tuple (begin, end) so it starts at the first non-empty line
     (obtained via indented_tree_line_generator / get_line_info) and ends at the
@@ -73,11 +82,15 @@ def trim_slice(lines, slice_tuple):
         slice_end = len(lines)
 
     # Trim from beginning
-    while slice_start < slice_end and _empty(lines[slice_start]):
+    while (slice_start < slice_end and
+           _empty(lines[slice_start]) and
+           not is_replaced(start_refs[slice_start][0])):
         slice_start += 1
 
     # Trim from end
-    while slice_end > slice_start and _empty(lines[slice_end-1]):
+    while (slice_end > slice_start and
+           _empty(lines[slice_end-1]) and
+           not is_replaced(end_refs[slice_end-1][0])):
         slice_end -= 1
 
     return (slice_start, slice_end)
@@ -151,9 +164,9 @@ def slice_tree(tree, start_refs, end_refs, slice_tuple, html_copy=None):
         new_tree = tree
 
     if start_ref:
-        include_start = (start_ref[1] == BEGIN)
+        include_start = (start_ref[1] == BEGIN or is_replaced(start_ref[0]))
     if end_ref:
-        include_end = (end_ref[1] == END)
+        include_end = (end_ref[1] == END or is_replaced(end_ref[0]))
 
     # If start_ref is the same as end_ref, and we don't include the element,
     # we are removing the entire tree. We need to handle this separately,
