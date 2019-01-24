@@ -845,6 +845,13 @@ class InternalTestCase(unittest.TestCase):
             'from': u'John Doe <john@doe.example>'
         })
 
+        # Brazillian portuguese
+        data = parse_reply(u'Em qui, 24 de jan de 2019 às 14:31, John Doe <john@doe.example> escreveu:')
+        self.assertEqual(data, {
+            'date': u'qui, 24 de jan de 2019 às 14:31',
+            'from': u'John Doe <john@doe.example>'
+        })
+
 
 class InternalHTMLTestCase(unittest.TestCase):
     def test_extract_headers(self):

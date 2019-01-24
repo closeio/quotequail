@@ -9,6 +9,7 @@ REPLY_PATTERNS = [
     u'El (.*) escribió:$', # Spanish
     u'^(.*) написал\(а\):$',  # Russian
     u'^Den (.*) skrev (.*):$', # Swedish
+    u'^Em (.*) escreveu:$', # Brazillian portuguese
     u'([0-9]{4}/[0-9]{1,2}/[0-9]{1,2}) (.* <.*@.*>)$', # gmail (?) reply
 ]
 
