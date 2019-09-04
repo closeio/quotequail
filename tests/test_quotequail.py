@@ -733,6 +733,16 @@ Thanks a lot!<br>
             'html_bottom': '<html><head></head><body><div class="gmail_extra">-- <br><div class="gmail_signature"><div dir="ltr"><div><div dir="ltr"><b>John Doe</b></div><div dir="ltr"><b>Senior Director</b><div>Some Company</div></div></div></div></div>\n</div>\n</body></html>',
         })
 
+    def test_reply_with_image(self):
+        html = "Test 2.<br><br>On Jun 05, 2018, at 09:56 AM, John Doe &lt;john@example.com&gt; wrote:<br><blockquote><img src=\"https://example.com\" class=\"fr-fic fr-dib\"><br>Some text 1.<br><br>Bart</blockquote>"
+        self.assertEqual(unwrap_html(html), {
+            'date': 'Jun 05, 2018, at 09:56 AM',
+            'from': 'John Doe <john@example.com>',
+            'html': u'<div><img src=\"https://example.com\" class=\"fr-fic fr-dib\"><br>Some text 1.<br><br>Bart</div>',
+            'html_top': u'Test 2.',
+            'type': 'reply'
+        })
+
     def test_outlook_forward(self):
         data = self.read_file('outlook_forward.html')
         result = unwrap_html(data)

@@ -136,9 +136,9 @@ def unwrap_html(html):
             'type': typ,
         }
 
-        top_range = _html.trim_slice(lines, top_range)
-        main_range = _html.trim_slice(lines, main_range)
-        bottom_range = _html.trim_slice(lines, bottom_range)
+        top_range = _html.trim_slice(lines, top_range, start_refs, end_refs)
+        main_range = _html.trim_slice(lines, main_range, start_refs, end_refs)
+        bottom_range = _html.trim_slice(lines, bottom_range, start_refs, end_refs)
 
         if top_range:
             top_tree = _html.slice_tree(tree, start_refs, end_refs, top_range,
