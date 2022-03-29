@@ -4,8 +4,7 @@ workflows:
   version: 2
   workflow:
     jobs:
-      - test-2.7
-      - test-3.5
+      - test-3.8
 
 defaults: &defaults
   working_directory: ~/code
@@ -19,11 +18,7 @@ defaults: &defaults
       command: python setup.py test
 
 jobs:
-  test-2.7:
+  test-3.8:
     <<: *defaults
     docker:
-    - image: circleci/python:2.7
-  test-3.5:
-    <<: *defaults
-    docker:
-    - image: circleci/python:3.5
+    - image: cimg/python:3.8
