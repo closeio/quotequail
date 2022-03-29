@@ -12,7 +12,7 @@ defaults: &defaults
   - checkout
   - run:
       name: Install dependencies
-      command: sudo pip install -r requirements_tests.txt
+      command: pip install -r requirements_tests.txt
   - run:
       name: Test
       command: python setup.py test
