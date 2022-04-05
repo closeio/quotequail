@@ -43,7 +43,7 @@ def find_quote_position(lines, max_wrap_lines, limit=None):
         end, typ = find_pattern_on_line(lines, n, max_wrap_lines)
         if typ:
             return end
-        if limit != None and n >= limit - 1:
+        if limit is not None and n >= limit - 1:
             return n
 
     return None

@@ -136,10 +136,10 @@ def slice_tree(tree, start_refs, end_refs, slice_tuple, html_copy=None):
         ):
             return get_html_tree("")
 
-        if slice_start != None and slice_start <= 0:
+        if slice_start is not None and slice_start <= 0:
             slice_start = None
 
-        if slice_end != None and slice_end >= len(start_refs):
+        if slice_end is not None and slice_end >= len(start_refs):
             slice_end = None
     else:
         slice_start, slice_end = None, None
@@ -335,7 +335,7 @@ def tree_line_generator(el, max_lines=None):
         return MULTIPLE_WHITESPACE_RE.sub(" ", text).strip()
 
     counter = 1
-    if max_lines != None and counter > max_lines:
+    if max_lines is not None and counter > max_lines:
         return
 
     # Buffer for the current line.
@@ -369,7 +369,7 @@ def tree_line_generator(el, max_lines=None):
                     end_ref = (el, state)
                     yield start_ref, end_ref, start_indentation_level, line
                     counter += 1
-                    if max_lines != None and counter > max_lines:
+                    if max_lines is not None and counter > max_lines:
                         return
                     line = ""
 
@@ -377,7 +377,7 @@ def tree_line_generator(el, max_lines=None):
                         # Simulate forward
                         yield (end_ref, end_ref, start_indentation_level, FORWARD_LINE)
                         counter += 1
-                        if max_lines != None and counter > max_lines:
+                        if max_lines is not None and counter > max_lines:
                             return
 
                 if not line:

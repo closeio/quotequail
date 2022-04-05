@@ -23,7 +23,7 @@ def quote(text, limit=1000):
 
     found = _internal.find_quote_position(lines, _patterns.MAX_WRAP_LINES, limit)
 
-    if found != None:
+    if found is not None:
         return [
             (True, "\n".join(lines[: found + 1])),
             (False, "\n".join(lines[found + 1 :])),
@@ -46,7 +46,7 @@ def quote_html(html, limit=1000):
 
     found = _internal.find_quote_position(lines, 1, limit)
 
-    if found == None:
+    if found is None:
         # No quoting found and we're below limit. We're done.
         return [(True, _html.render_html_tree(tree))]
     else:
