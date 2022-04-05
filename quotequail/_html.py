@@ -26,11 +26,6 @@ INLINE_TAGS = [
 BEGIN = "begin"
 END = "end"
 
-try:
-    string_class = basestring  # Python 2.7
-except NameError:
-    string_class = str  # Python 3.x
-
 
 def trim_tree_after(element, include_element=True):
     """
@@ -65,7 +60,7 @@ def trim_tree_before(element, include_element=True, keep_head=True):
             remove_el = el
             el = el.getprevious()
             tag = remove_el.tag
-            is_head = isinstance(tag, string_class) and tag.lower() == "head"
+            is_head = isinstance(tag, str) and tag.lower() == "head"
             if not keep_head or not is_head:
                 parent_el.remove(remove_el)
         el = parent_el
@@ -222,7 +217,7 @@ def get_html_tree(html):
     # tags that contain colons. When rendering the tree, we will restore the
     # tag name.
     for el in tree.iter():
-        if el.nsmap or (isinstance(el.tag, string_class) and ":" in el.tag):
+        if el.nsmap or (isinstance(el.tag, str) and ":" in el.tag):
             if el.nsmap:
                 actual_tag_name = "{}:{}".format(list(el.nsmap.keys())[0], el.tag)
             else:
@@ -263,7 +258,7 @@ def render_html_tree(tree):
 
 
 def is_indentation_element(element):
-    if isinstance(element.tag, string_class):
+    if isinstance(element.tag, str):
         return element.tag.lower() == "blockquote"
     return False
 
@@ -280,7 +275,7 @@ def tree_token_generator(el, indentation_level=0):
     - Text right after the end of the tag, or None.
     """
 
-    if not isinstance(el.tag, string_class):
+    if not isinstance(el.tag, str):
         return
 
     tag_name = el.tag.lower()
@@ -389,7 +384,7 @@ def tree_line_generator(el, max_lines=None):
                     start_ref = (el, state)
                     start_indentation_level = indentation_level
 
-        elif isinstance(token, string_class):
+        elif isinstance(token, str):
             line += token
 
         else:
