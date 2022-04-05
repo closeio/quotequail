@@ -8,6 +8,7 @@ workflows:
       - test-3.8
       - test-3.9
       - test-3.10
+      - static-code-analysis
 
 defaults: &defaults
   working_directory: ~/code
@@ -37,3 +38,15 @@ jobs:
     <<: *defaults
     docker:
       - image: cimg/python:3.10
+  static-code-analysis:
+    working_directory: ~/code
+    docker:
+      - image: cimg/python:3.8
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: pip install lintlizard==0.18.0 "click<8.1"
+      - run:
+          name: LintLizard
+          command: lintlizard
