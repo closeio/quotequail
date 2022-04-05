@@ -211,7 +211,7 @@ def find_unwrap_start(lines, max_wrap_lines, min_header_lines, min_quoted_lines)
 
 def unindent_lines(lines):
     unquoted = []
-    for n, line in enumerate(lines):
+    for line in lines:
         if line.startswith("> "):
             unquoted.append(line[2:])
         elif line.startswith(">"):
