@@ -3,7 +3,7 @@
 import os
 import unittest
 
-from quotequail import *
+from quotequail import quote, quote_html, unwrap, unwrap_html
 
 
 class FileMixin(object):
