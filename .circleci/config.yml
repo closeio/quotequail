@@ -15,7 +15,7 @@ defaults: &defaults
   - checkout
   - run:
       name: Install Python dependencies
-      command: pip install -r requirements_tests.txt
+      command: CFLAGS="-O0" pip install -r requirements_tests.txt
   - run:
       name: Test
       command: python setup.py test
