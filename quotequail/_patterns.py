@@ -44,8 +44,8 @@ FORWARD_PATTERNS = (
     [
         "^{}$".format(FORWARD_LINE),
     ]
-    + ["^---+ ?%s ?---+$" % p for p in FORWARD_MESSAGES]
-    + ["^%s:$" % p for p in FORWARD_MESSAGES]
+    + [f"^---+ ?{p} ?---+$" for p in FORWARD_MESSAGES]
+    + [f"^{p}:$" for p in FORWARD_MESSAGES]
 )
 
 FORWARD_STYLES = [
