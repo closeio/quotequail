@@ -209,7 +209,7 @@ def get_html_tree(html):
     # If the document doesn't start with a top level tag, wrap it with a <div>
     # that will be later stripped out for consistent behavior.
     if tree.tag not in lxml.html.defs.top_level_tags:
-        html = b"<div>%s</div>" % html
+        html = b"<div>" + html + b"</div>"
         tree = lxml.html.fromstring(html, parser=parser)
 
     # HACK for Outlook emails, where tags like <o:p> are rendered as <p>. We
