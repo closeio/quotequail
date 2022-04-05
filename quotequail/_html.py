@@ -146,9 +146,8 @@ def slice_tree(tree, start_refs, end_refs, slice_tuple, html_copy=None):
     if slice_start is not None:
         start_ref = start_refs[slice_start]
 
-    if slice_end is not None:
-        if slice_end < len(end_refs):
-            end_ref = end_refs[slice_end - 1]
+    if slice_end is not None and slice_end < len(end_refs):
+        end_ref = end_refs[slice_end - 1]
 
     if html_copy is not None:
         et = lxml.etree.ElementTree(tree)
@@ -175,9 +174,13 @@ def slice_tree(tree, start_refs, end_refs, slice_tuple, html_copy=None):
     # we are removing the entire tree. We need to handle this separately,
     # otherwise trim_tree_after won't work because it can't find the already
     # removed reference.
-    if start_ref and end_ref and start_ref[0] == end_ref[0]:
-        if not include_start or not include_end:
-            return get_html_tree("")
+    if (
+        start_ref
+        and end_ref
+        and start_ref[0] == end_ref[0]
+        and (not include_start or not include_end)
+    ):
+        return get_html_tree("")
 
     if start_ref:
         trim_tree_before(start_ref[0], include_element=include_start)

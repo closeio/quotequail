@@ -200,9 +200,11 @@ def find_unwrap_start(lines, max_wrap_lines, min_header_lines, min_quoted_lines)
 
         # Find a header
         match = HEADER_RE.match(line)
-        if match:
-            if len(extract_headers(lines[n:], max_wrap_lines)[0]) >= min_header_lines:
-                return n, n, "headers"
+        if (
+            match
+            and len(extract_headers(lines[n:], max_wrap_lines)[0]) >= min_header_lines
+        ):
+            return n, n, "headers"
 
     return None, None, None
 
