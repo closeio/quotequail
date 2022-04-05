@@ -2,9 +2,7 @@
 # quotequail
 # a library that identifies quoted text in email messages
 
-import re
-
-from . import _internal
+from . import _internal, _patterns
 
 __all__ = ["quote", "quote_html", "unwrap", "unwrap_html"]
 

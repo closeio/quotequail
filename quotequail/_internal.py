@@ -1,8 +1,5 @@
-import re
-
 from ._patterns import (
     COMPILED_PATTERN_MAP,
-    COMPILED_PATTERNS,
     HEADER_MAP,
     HEADER_RE,
     REPLY_DATE_SPLIT_REGEX,
