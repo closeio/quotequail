@@ -1138,10 +1138,9 @@ class InternalHTMLTestCase(unittest.TestCase):
         from quotequail import _html
 
         tree = _html.get_html_tree("<div>foo <span>bar</span><br>baz</div>")
-        data = [result for result in _html.tree_line_generator(tree)]
+        data = list(_html.tree_line_generator(tree))
         div = tree.xpath("div")[0]
         br = tree.xpath("div/br")[0]
-        span = tree.xpath("div/span")[0]
         self.assertEqual(
             data,
             [
@@ -1149,7 +1148,7 @@ class InternalHTMLTestCase(unittest.TestCase):
                 ((br, "end"), (div, "end"), 0, "baz"),
             ],
         )
-        data = [result for result in _html.tree_line_generator(tree, max_lines=1)]
+        data = list(_html.tree_line_generator(tree, max_lines=1))
         div = tree.xpath("div")[0]
         br = tree.xpath("div/br")[0]
         self.assertEqual(
@@ -1160,7 +1159,7 @@ class InternalHTMLTestCase(unittest.TestCase):
         )
 
         tree = _html.get_html_tree("<div><h1>foo</h1>bar</div>")
-        data = [result for result in _html.tree_line_generator(tree)]
+        data = list(_html.tree_line_generator(tree))
         div = tree.xpath("div")[0]
         h1 = tree.xpath("div/h1")[0]
         self.assertEqual(
@@ -1172,7 +1171,7 @@ class InternalHTMLTestCase(unittest.TestCase):
         )
 
         tree = _html.get_html_tree("<div><blockquote>hi</blockquote>world</div>")
-        data = [result for result in _html.tree_line_generator(tree)]
+        data = list(_html.tree_line_generator(tree))
         div = tree.xpath("div")[0]
         blockquote = tree.xpath("div/blockquote")[0]
         self.assertEqual(
@@ -1190,7 +1189,7 @@ class InternalHTMLTestCase(unittest.TestCase):
                 <tr><td>From: </td><td>from line</td></tr>
             </table>"""
         )
-        data = [result for result in _html.tree_line_generator(tree)]
+        data = list(_html.tree_line_generator(tree))
         tr1, tr2 = tree.xpath("table/tr")
         self.assertEqual(
             data,
