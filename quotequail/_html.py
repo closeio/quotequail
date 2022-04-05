@@ -395,7 +395,7 @@ def tree_line_generator(el, max_lines=None):
 
 
 def indented_tree_line_generator(el, max_lines=None):
-    """
+    r"""
     Like tree_line_generator, but yields tuples (start_ref, end_ref, line),
     where the line already takes the indentation into account by having "> "
     prepended. If a line already starts with ">", it is escaped ("\\>"). This
