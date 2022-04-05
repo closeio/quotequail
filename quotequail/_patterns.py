@@ -8,7 +8,7 @@ REPLY_PATTERNS = [
     "^Am (.*) schrieb (.*):$",  # German
     "^Le (.*) a écrit :$",  # French
     "El (.*) escribió:$",  # Spanish
-    "^(.*) написал\(а\):$",  # Russian
+    r"^(.*) написал\(а\):$",  # Russian
     "^Den (.*) skrev (.*):$",  # Swedish
     "^Em (.*) escreveu:$",  # Brazillian portuguese
     "([0-9]{4}/[0-9]{1,2}/[0-9]{1,2}) (.* <.*@.*>)$",  # gmail (?) reply
@@ -103,7 +103,7 @@ COMPILED_PATTERN_MAP = {
 
 COMPILED_PATTERNS: List[re.Pattern] = sum(COMPILED_PATTERN_MAP.values(), [])
 
-MULTIPLE_WHITESPACE_RE = re.compile("\s+")
+MULTIPLE_WHITESPACE_RE = re.compile(r"\s+")
 
 # Amount to lines to join to check for potential wrapped patterns in plain text
 # messages.
@@ -118,4 +118,4 @@ MIN_QUOTED_LINES = 3
 # Characters at the end of line where we join lines without adding a space.
 # For example, "John <\njohn@example>" becomes "John <john@example>", but
 # "John\nDoe" becomes "John Doe".
-STRIP_SPACE_CHARS = "<([{\"'"
+STRIP_SPACE_CHARS = r"<([{\"'"
