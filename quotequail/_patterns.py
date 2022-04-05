@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import re
+from typing import List
 
 REPLY_PATTERNS = [
     "^On (.*) wrote:$",  # apple mail/gmail reply
@@ -100,7 +101,7 @@ COMPILED_PATTERN_MAP = {
     "forward": [re.compile(regex) for regex in FORWARD_PATTERNS],
 }
 
-COMPILED_PATTERNS = sum(COMPILED_PATTERN_MAP.values(), [])
+COMPILED_PATTERNS: List[re.Pattern] = sum(COMPILED_PATTERN_MAP.values(), [])
 
 MULTIPLE_WHITESPACE_RE = re.compile("\s+")
 
