@@ -276,8 +276,6 @@ def tree_token_generator(el, indentation_level=0):
     if not isinstance(el.tag, str):
         return
 
-    tag_name = el.tag.lower()
-
     is_indentation = is_indentation_element(el)
 
     if is_indentation:
