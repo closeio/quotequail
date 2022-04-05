@@ -6,7 +6,7 @@ import unittest
 from quotequail import quote, quote_html, unwrap, unwrap_html
 
 
-class FileMixin(object):
+class FileMixin:
     def read_file(self, name):
         with open(os.path.join(os.path.dirname(__file__), "files", name), "rb") as f:
             return f.read().decode("utf8")
