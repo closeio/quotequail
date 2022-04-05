@@ -286,8 +286,7 @@ def tree_token_generator(el, indentation_level=0):
     yield el.text
 
     for child in el.iterchildren():
-        for token in tree_token_generator(child, indentation_level):
-            yield token
+        yield from tree_token_generator(child, indentation_level)
 
     if is_indentation:
         indentation_level -= 1
