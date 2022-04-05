@@ -9,7 +9,7 @@ __all__ = ["quote", "quote_html", "unwrap", "unwrap_html"]
 
 def quote(text, limit=1000):
     """
-    Takes a plain text message as an argument, returns a list of tuples. The
+    Take a plain text message as an argument, return a list of tuples. The
     first argument of the tuple denotes whether the text should be expanded by
     default. The second argument is the unmodified corresponding text.
 
@@ -18,7 +18,6 @@ def quote(text, limit=1000):
     Unless the limit param is set to None, the text will automatically be quoted
     starting at the line where the limit is reached.
     """
-
     lines = text.split("\n")
 
     found = _internal.find_quote_position(lines, _patterns.MAX_WRAP_LINES, limit)
@@ -75,7 +74,6 @@ def unwrap(text):
 
     Otherwise, this function returns None.
     """
-
     lines = text.split("\n")
 
     result = _internal.unwrap(

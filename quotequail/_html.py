@@ -29,7 +29,7 @@ END = "end"
 
 def trim_tree_after(element, include_element=True):
     """
-    Removes the document tree following the given element. If include_element
+    Remove the document tree following the given element. If include_element
     is True, the given element is kept in the tree, otherwise it is removed.
     """
     el = element
@@ -46,7 +46,7 @@ def trim_tree_after(element, include_element=True):
 
 def trim_tree_before(element, include_element=True, keep_head=True):
     """
-    Removes the document tree preceding the given element. If include_element
+    Remove the document tree preceding the given element. If include_element
     is True, the given element is kept in the tree, otherwise it is removed.
     """
     el = element
@@ -99,7 +99,7 @@ def trim_slice(lines, slice_tuple):
 
 def unindent_tree(element):
     """
-    Removes the outermost indent. For example, the tree
+    Remove the outermost indent. For example, the tree
     "<div>A<blockqote>B<div>C<blockquote>D</blockquote>E</div>F</blockquote>G</div>"
     is transformed to
     "<div>A<div>B<div>C<blockquote>D</blockquote>E</div>F</div>G</div>"
@@ -113,7 +113,7 @@ def unindent_tree(element):
 
 def slice_tree(tree, start_refs, end_refs, slice_tuple, html_copy=None):
     """
-    Slices the HTML tree with the given start_refs and end_refs (obtained via
+    Slice the HTML tree with the given start_refs and end_refs (obtained via
     get_line_info) at the given slice_tuple, a tuple (start, end) containing
     the start and end of the slice (or None, to start from the start / end at
     the end of the tree). If html_copy is specified, a new tree is constructed
@@ -124,7 +124,6 @@ def slice_tree(tree, start_refs, end_refs, slice_tuple, html_copy=None):
        construct a copy of the tree using copy.copy() (see bug
        https://bugs.launchpad.net/lxml/+bug/1562550).
     """
-
     start_ref = None
     end_ref = None
 
@@ -195,7 +194,6 @@ def get_html_tree(html):
     otherwise result in an error. The wrapping can be later removed with
     strip_wrapping().
     """
-
     parser = lxml.html.HTMLParser(encoding="utf-8")
     html = html.encode("utf8")
 
@@ -230,7 +228,7 @@ def get_html_tree(html):
 
 def strip_wrapping(html):
     """
-    Removes the wrapping that might have resulted when using get_html_tree().
+    Remove the wrapping that might have resulted when using get_html_tree().
     """
     if html.startswith("<div>") and html.endswith("</div>"):
         html = html[5:-6]
@@ -239,13 +237,12 @@ def strip_wrapping(html):
 
 def render_html_tree(tree):
     """
-    Renders the given HTML tree, and strips any wrapping that was applied in
+    Render the given HTML tree, and strip any wrapping that was applied in
     get_html_tree().
 
     You should avoid further processing of the given tree after calling this
     method because we modify namespaced tags here.
     """
-
     # Restore any tag names that were changed in get_html_tree()
     for el in tree.iter():
         if "__tag_name" in el.attrib:
@@ -265,8 +262,7 @@ def is_indentation_element(element):
 
 def tree_token_generator(el, indentation_level=0):
     """
-    Internal generator that yields tokens for the given HTML element as
-    follows:
+    Yield tokens for the given HTML element as follows:
 
     - A tuple (LXML element, BEGIN, indentation_level)
     - Text right after the start of the tag, or None.
@@ -274,7 +270,6 @@ def tree_token_generator(el, indentation_level=0):
     - A tuple (LXML element, END, indentation_level)
     - Text right after the end of the tag, or None.
     """
-
     if not isinstance(el.tag, str):
         return
 
@@ -303,8 +298,9 @@ def tree_token_generator(el, indentation_level=0):
 
 def tree_line_generator(el, max_lines=None):
     """
-    Internal generator that iterates through an LXML tree and yields a tuple
-    per line. In this context, lines are blocks of text separated by <br> tags
+    Iterate through an LXML tree and yield a tuple per line.
+
+    In this context, lines are blocks of text separated by <br> tags
     or by block elements. The tuples contain the following elements:
 
     - A tuple with the element reference (element, position) for the start

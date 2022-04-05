@@ -14,8 +14,8 @@ documentation see the corresponding constants in _patterns.py.
 
 def find_pattern_on_line(lines, n, max_wrap_lines):
     """
-    Finds a forward/reply pattern within the given lines on text on the given
-    line number and returns a tuple with the type ('reply' or 'forward') and
+    Find a forward/reply pattern within the given lines on text on the given
+    line number and return a tuple with the type ('reply' or 'forward') and
     line number of where the pattern ends. The returned line number may be
     different from the given line number in case the pattern wraps over
     multiple lines.
@@ -35,10 +35,9 @@ def find_pattern_on_line(lines, n, max_wrap_lines):
 
 def find_quote_position(lines, max_wrap_lines, limit=None):
     """
-    Returns the (ending) line number of a quoting pattern. If a limit is given
+    Return the (ending) line number of a quoting pattern. If a limit is given
     and the limit is reached, the limit is returned.
     """
-
     for n in range(len(lines)):
         end, typ = find_pattern_on_line(lines, n, max_wrap_lines)
         if typ:
@@ -71,7 +70,7 @@ def join_wrapped_lines(lines):
 
 def extract_headers(lines, max_wrap_lines):
     """
-    Extracts email headers from the given lines. Returns a dict with the
+    Extract email headers from the given lines. Returns a dict with the
     detected headers and the amount of lines that were processed.
     """
     hdrs = {}
@@ -112,7 +111,7 @@ def extract_headers(lines, max_wrap_lines):
 
 def parse_reply(line):
     """
-    Parses the given reply line ("On DATE, USER wrote:") and returns a
+    Parse the given reply line ("On DATE, USER wrote:") and returns a
     dictionary with the "Date" and "From" keys, or None, if couldn't parse.
     """
     if line.startswith(">"):
@@ -154,7 +153,7 @@ def parse_reply(line):
 
 def find_unwrap_start(lines, max_wrap_lines, min_header_lines, min_quoted_lines):
     """
-    Finds the starting point of a wrapped email. Returns a tuple containing
+    Find the starting point of a wrapped email. Returns a tuple containing
     (start_line_number, end_line_number, type), where type can be one of the
     following:
 
@@ -171,7 +170,6 @@ def find_unwrap_start(lines, max_wrap_lines, min_header_lines, min_quoted_lines)
 
     Returns (None, None, None) if nothing was found.
     """
-
     for n, line in enumerate(lines):
         if not line.strip():
             continue
@@ -224,7 +222,7 @@ def unindent_lines(lines):
 
 def unwrap(lines, max_wrap_lines, min_header_lines, min_quoted_lines):
     """
-    Returns a tuple of:
+    Return a tuple of:
     - Type ('forward', 'reply', 'headers', 'quoted')
     - Range of the text at the top of the wrapped message (or None)
     - Headers dict (or None)
@@ -232,7 +230,6 @@ def unwrap(lines, max_wrap_lines, min_header_lines, min_quoted_lines):
     - Range of the text below the wrapped message (or None)
     - Whether the wrapped text needs to be unindented
     """
-
     headers = {}
 
     # Get line number and wrapping type.
