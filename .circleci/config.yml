@@ -18,7 +18,7 @@ defaults: &defaults
       command: CFLAGS="-O0" pip install -r requirements_tests.txt
   - run:
       name: Test
-      command: python setup.py test
+      command: pytest
 
 jobs:
   test-3.7:
