@@ -1,8 +1,14 @@
+import re
+
 from setuptools import setup
+
+VERSION_FILE = "quotequail/__init__.py"
+with open(VERSION_FILE, encoding="utf8") as fd:
+    version = re.search(r'__version__ = ([\'"])(.*?)\1', fd.read()).group(2)
 
 setup(
     name="quotequail",
-    version="0.2.3",
+    version=version,
     url="http://github.com/closeio/quotequail",
     license="MIT",
     author="Thomas Steinacher",
