@@ -14,6 +14,8 @@ jobs:
     permissions:
       # id-token for the trusted publisher setup
       id-token: write
+      # for tagging the commit
+      contents: write
     steps:
       - uses: actions/checkout@v2
 
