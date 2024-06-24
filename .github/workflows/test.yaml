@@ -31,7 +31,7 @@ jobs:
         python-version: ['3.8', '3.9', '3.10', '3.11']
       # Do not cancel any jobs when a single job fails
       fail-fast: false
-    name: Python ${{ matrix.python-version }} on ${{ matrix.os }}
+    name: Python ${{ matrix.python-version }}
     runs-on: 'ubuntu-20.04'
     container: python:${{ matrix.python-version }}
     steps:
