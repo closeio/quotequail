@@ -4,7 +4,7 @@
 
 from . import _internal, _patterns
 
-__version__ = "0.2.3"
+__version__ = "0.2.4"
 __all__ = ["quote", "quote_html", "unwrap", "unwrap_html"]
 
 
