@@ -1,0 +1,46 @@
+name: test-workflow
+on:
+  # When any branch in the repository is pushed
+  push:
+  # When a pull request is created
+  pull_request:
+  # When manually triggered to run
+  workflow_dispatch:
+
+jobs:
+  lint:
+    strategy:
+      matrix:
+        python-version: [ '3.8', '3.9', '3.10', '3.11' ]
+    name: Lint ${{ matrix.python-version }}
+    runs-on: 'ubuntu-20.04'
+    container: python:${{ matrix.python-version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Lint code
+        run: |
+          pip install lintlizard==0.18.0 "click<8.1"
+          lintlizard
+
+  # Run tests
+  test:
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9', '3.10', '3.11']
+      # Do not cancel any jobs when a single job fails
+      fail-fast: false
+    name: Python ${{ matrix.python-version }}
+    runs-on: 'ubuntu-20.04'
+    container: python:${{ matrix.python-version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          CFLAGS="-O0" pip install -r requirements_tests.txt
+
+      - name: Run tests
+        run: pytest

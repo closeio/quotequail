@@ -1,8 +1,6 @@
 ==========
 quotequail
 ==========
-.. image:: https://circleci.com/gh/closeio/quotequail/tree/master.svg?style=svg&circle-token=493e282bf7e3bf5e72bf3e255a116534ed8a79ab
-    :target: https://circleci.com/gh/closeio/quotequail/tree/master
 
 A library that identifies quoted text in plain text and HTML email messages.
 quotequail has no mandatory dependencies, however using HTML methods require
