@@ -11,6 +11,9 @@ jobs:
   build_and_upload:
     runs-on: arc-amd64-runners
     environment: production
+    permissions:
+      # id-token for the trusted publisher setup
+      id-token: write
     steps:
       - uses: actions/checkout@v2
 
@@ -76,6 +79,3 @@ jobs:
           python setup.py sdist
       - name: Upload to PyPI
         uses: closeio/gh-action-pypi-publish@a260c7e54e4251db69485e1e7ca271aec8c0ddf9
-        with:
-          user: __token__
-          password: ${{ secrets.PYPI_TOKEN }}
