@@ -79,3 +79,5 @@ jobs:
           python setup.py sdist
       - name: Upload to PyPI
         uses: closeio/gh-action-pypi-publish@a260c7e54e4251db69485e1e7ca271aec8c0ddf9
+        with:
+          repository-url: https://test.pypi.org/legacy/
