@@ -9,7 +9,7 @@ on:
 
 jobs:
   build_and_upload:
-    runs-on: arc-amd64-runners
+    runs-on: 'ubuntu-20.04'
     environment: production
     permissions:
       # id-token for the trusted publisher setup
