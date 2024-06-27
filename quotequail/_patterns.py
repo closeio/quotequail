@@ -1,5 +1,3 @@
-import functools
-import operator
 import re
 
 REPLY_PATTERNS = [
@@ -102,9 +100,11 @@ COMPILED_PATTERN_MAP = {
     "forward": [re.compile(regex) for regex in FORWARD_PATTERNS],
 }
 
-COMPILED_PATTERNS: list[re.Pattern] = functools.reduce(
-    operator.iadd, COMPILED_PATTERN_MAP.values(), []
-)
+COMPILED_PATTERNS: list[re.Pattern] = [
+    pattern
+    for patterns in COMPILED_PATTERN_MAP.values()
+    for pattern in patterns
+]
 
 MULTIPLE_WHITESPACE_RE = re.compile(r"\s+")
 
