@@ -153,7 +153,9 @@ def parse_reply(line):
     return None
 
 
-def find_unwrap_start(lines, max_wrap_lines, min_header_lines, min_quoted_lines):
+def find_unwrap_start(
+    lines, max_wrap_lines, min_header_lines, min_quoted_lines
+):
     """
     Find the starting point of a wrapped email. Returns a tuple containing
     (start_line_number, end_line_number, type), where type can be one of the
@@ -356,5 +358,4 @@ def unwrap(lines, max_wrap_lines, min_header_lines, min_quoted_lines):
             True,
         )
 
-    # TODO: refactor
-    assert False
+    return None

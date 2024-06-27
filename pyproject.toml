@@ -6,9 +6,9 @@ line-length = 79
 ignore = [
     "ISC001",
     "PLR2004",
-    "S101",
-    "S201",
+    "TRY003",
     # Some patterns contain special characters.
+    "PLR0911",
     "RUF001",
 ]
 select = [
@@ -50,4 +50,7 @@ forced-separate = ["tests"]
 max-complexity = 15
 
 [tool.ruff.lint.pylint]
-max-branches = 11
+max-branches = 16
+
+[tool.ruff.lint.per-file-ignores]
+"tests/test_quotequail.py" = ["E501", "PT009"]

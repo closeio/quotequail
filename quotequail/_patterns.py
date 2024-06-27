@@ -1,7 +1,6 @@
 import functools
 import operator
 import re
-from typing import List
 
 REPLY_PATTERNS = [
     "^On (.*) wrote:$",  # apple mail/gmail reply
@@ -106,6 +105,8 @@ COMPILED_PATTERN_MAP = {
 COMPILED_PATTERNS: list[re.Pattern] = functools.reduce(
     operator.iadd, COMPILED_PATTERN_MAP.values(), []
 )
+
+MULTIPLE_WHITESPACE_RE = re.compile(r"\s+")
 
 # Amount to lines to join to check for potential wrapped patterns in plain text
 # messages.

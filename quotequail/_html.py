@@ -391,7 +391,7 @@ def tree_line_generator(el, max_lines=None):
             line += token
 
         else:
-            raise RuntimeError("invalid token: {}".format(token))
+            raise RuntimeError(f"invalid token: {token}")
 
     line = _trim_spaces(line)
     if line:
