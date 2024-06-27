@@ -383,7 +383,8 @@ def tree_line_generator(
             is_forward = (
                 is_block
                 and state == BEGIN
-                and el.attrib.get("style") in FORWARD_STYLES
+                and (style := el.attrib.get("style"))
+                and any(style_re.match(style) for style_re in FORWARD_STYLES)
             )
 
             if is_block or line_break:
