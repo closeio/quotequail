@@ -11,7 +11,7 @@ jobs:
   lint:
     strategy:
       matrix:
-        python-version: ['3.9', '3.10', '3.11']
+        python-version: ['3.10', '3.11', '3.12']
     name: Lint ${{ matrix.python-version }}
     runs-on: 'ubuntu-20.04'
     container: python:${{ matrix.python-version }}
@@ -26,11 +26,16 @@ jobs:
           ruff format --check
           ruff check --select I
 
+      - name: Type check code
+        run: |
+          pip install mypy==1.10.1
+          mypy
+
   # Run tests
   test:
     strategy:
       matrix:
-        python-version: ['3.9', '3.10', '3.11']
+        python-version: ['3.10', '3.11', '3.12']
       # Do not cancel any jobs when a single job fails
       fail-fast: false
     name: Python ${{ matrix.python-version }}

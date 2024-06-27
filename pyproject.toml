@@ -54,3 +54,14 @@ max-branches = 16
 
 [tool.ruff.lint.per-file-ignores]
 "tests/test_quotequail.py" = ["E501", "PT009"]
+
+[tool.mypy]
+python_version = "3.10"
+ignore_missing_imports = true
+no_implicit_optional = true
+strict_equality = true
+follow_imports = "normal"
+warn_unreachable = true
+show_error_context = true
+pretty = true
+files = "quotequail"
