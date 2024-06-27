@@ -150,6 +150,8 @@ def parse_reply(line):
             "from": user.strip(),
         }
 
+    return None
+
 
 def find_unwrap_start(lines, max_wrap_lines, min_header_lines, min_quoted_lines):
     """
@@ -193,8 +195,7 @@ def find_unwrap_start(lines, max_wrap_lines, min_header_lines, min_quoted_lines)
                     continue
                 if not peek_line.startswith(">"):
                     break
-                else:
-                    matched_lines += 1
+                matched_lines += 1
                 if matched_lines >= min_quoted_lines:
                     return n, n, "quoted"
 
@@ -202,7 +203,8 @@ def find_unwrap_start(lines, max_wrap_lines, min_header_lines, min_quoted_lines)
         match = HEADER_RE.match(line)
         if (
             match
-            and len(extract_headers(lines[n:], max_wrap_lines)[0]) >= min_header_lines
+            and len(extract_headers(lines[n:], max_wrap_lines)[0])
+            >= min_header_lines
         ):
             return n, n, "headers"
 
@@ -244,7 +246,9 @@ def unwrap(lines, max_wrap_lines, min_header_lines, min_quoted_lines):
         main_type = typ
 
         if typ == "reply":
-            reply_headers = parse_reply(join_wrapped_lines(lines[start : end + 1]))
+            reply_headers = parse_reply(
+                join_wrapped_lines(lines[start : end + 1])
+            )
             if reply_headers:
                 headers.update(reply_headers)
 
@@ -263,7 +267,9 @@ def unwrap(lines, max_wrap_lines, min_header_lines, min_quoted_lines):
                 unquoted, max_wrap_lines, min_header_lines, min_quoted_lines
             )
             if typ == "headers":
-                hdrs, hdrs_length = extract_headers(unquoted[start3:], max_wrap_lines)
+                hdrs, hdrs_length = extract_headers(
+                    unquoted[start3:], max_wrap_lines
+                )
                 if hdrs:
                     headers.update(hdrs)
                 rest2_start = quoted_start + start3 + hdrs_length
@@ -275,43 +281,51 @@ def unwrap(lines, max_wrap_lines, min_header_lines, min_quoted_lines):
                     (rest_start, None),
                     True,
                 )
-            else:
-                return (
-                    main_type,
-                    (0, start),
-                    headers,
-                    (quoted_start, rest_start),
-                    (rest_start, None),
-                    True,
-                )
-
-        elif typ == "headers":
-            hdrs, hdrs_length = extract_headers(lines[start + 1 :], max_wrap_lines)
-            if hdrs:
-                headers.update(hdrs)
-            rest_start = start + 1 + hdrs_length
-            return main_type, (0, start), headers, (rest_start, None), None, False
-        else:
-            # Didn't find quoted section or headers, assume that everything
-            # below is the qouted text.
             return (
                 main_type,
                 (0, start),
                 headers,
-                (start + (start2 or 0) + 1, None),
+                (quoted_start, rest_start),
+                (rest_start, None),
+                True,
+            )
+
+        if typ == "headers":
+            hdrs, hdrs_length = extract_headers(
+                lines[start + 1 :], max_wrap_lines
+            )
+            if hdrs:
+                headers.update(hdrs)
+            rest_start = start + 1 + hdrs_length
+            return (
+                main_type,
+                (0, start),
+                headers,
+                (rest_start, None),
                 None,
                 False,
             )
 
+        # Didn't find quoted section or headers, assume that everything
+        # below is the qouted text.
+        return (
+            main_type,
+            (0, start),
+            headers,
+            (start + (start2 or 0) + 1, None),
+            None,
+            False,
+        )
+
     # We just found headers, which usually indicates a forwarding.
-    elif typ == "headers":
+    if typ == "headers":
         main_type = "forward"
         hdrs, hdrs_length = extract_headers(lines[start:], max_wrap_lines)
         rest_start = start + hdrs_length
         return main_type, (0, start), hdrs, (rest_start, None), None, False
 
     # We found quoted text. Headers may be within the quoted text.
-    elif typ == "quoted":
+    if typ == "quoted":
         unquoted = unindent_lines(lines[start:])
         rest_start = start + len(unquoted)
         start2, end2, typ = find_unwrap_start(
@@ -319,7 +333,9 @@ def unwrap(lines, max_wrap_lines, min_header_lines, min_quoted_lines):
         )
         if typ == "headers":
             main_type = "forward"
-            hdrs, hdrs_length = extract_headers(unquoted[start2:], max_wrap_lines)
+            hdrs, hdrs_length = extract_headers(
+                unquoted[start2:], max_wrap_lines
+            )
             rest2_start = start + hdrs_length
             return (
                 main_type,
@@ -329,13 +345,16 @@ def unwrap(lines, max_wrap_lines, min_header_lines, min_quoted_lines):
                 (rest_start, None),
                 True,
             )
-        else:
-            main_type = "quote"
-            return (
-                main_type,
-                (None, start),
-                None,
-                (start, rest_start),
-                (rest_start, None),
-                True,
-            )
+
+        main_type = "quote"
+        return (
+            main_type,
+            (None, start),
+            None,
+            (start, rest_start),
+            (rest_start, None),
+            True,
+        )
+
+    # TODO: refactor
+    assert False

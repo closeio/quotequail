@@ -8,7 +8,9 @@ from quotequail import quote, quote_html, unwrap, unwrap_html
 
 class FileMixin:
     def read_file(self, name):
-        with open(os.path.join(os.path.dirname(__file__), "files", name), "rb") as f:
+        with open(
+            os.path.join(os.path.dirname(__file__), "files", name), "rb"
+        ) as f:
             return f.read().decode("utf8")
 
     def assert_equal_to_file(self, string, name):
@@ -111,7 +113,10 @@ Some quoted text.
 """
             ),
             [
-                (True, "Hello world.\n\n---------- Forwarded message ----------"),
+                (
+                    True,
+                    "Hello world.\n\n---------- Forwarded message ----------",
+                ),
                 (
                     False,
                     "From: Someone <someone@example.com>\nSubject: The email\n\nSome quoted text.\n",
@@ -265,7 +270,9 @@ class HTMLQuoteTestCase(unittest.TestCase):
 
     def test_limit(self):
         self.assertEqual(
-            quote_html("""<p>One</p><p>Two</p><p>Three</p><p>Four</p>""", limit=3),
+            quote_html(
+                """<p>One</p><p>Two</p><p>Three</p><p>Four</p>""", limit=3
+            ),
             [
                 (True, "<p>One</p><p>Two</p><p>Three</p>"),
                 (False, "<p>Four</p>"),
@@ -591,7 +598,6 @@ OHAI"""
                 "date": "Fri, 19 Jun 2009 19:16:04 +0200",
                 "subject": "Some Newsletter",
                 "to": "to@example.com",
-                "reply-to": "reply <reply@example.com>",
                 "text": "OHAI",
             },
         )
@@ -958,7 +964,9 @@ Thanks a lot!<br>
         self.assertEqual(result["to"], "Foo Bar (foo@bar.example)")
         self.assertEqual(result["date"], "Wednesday, July 09, 2014 10:27 AM")
         self.assertEqual(result["subject"], "The subject!")
-        self.assert_equal_to_file(result["html"], "outlook_forward_unwrapped.html")
+        self.assert_equal_to_file(
+            result["html"], "outlook_forward_unwrapped.html"
+        )
         self.assert_equal_to_file(
             result["html_top"], "outlook_forward_unwrapped_top.html"
         )
@@ -970,28 +978,35 @@ Thanks a lot!<br>
         self.assertEqual(result["type"], "forward")
         self.assertEqual(result["from"], "John Doe <johndoe@example.com>")
         self.assertEqual(result["to"], "Foo Bar <foobar@example.com>")
-        self.assertEqual(result["date"], "Tue, 3 May 2016 14:54:27 +0200 (CEST)")
+        self.assertEqual(
+            result["date"], "Tue, 3 May 2016 14:54:27 +0200 (CEST)"
+        )
         self.assertEqual(result["subject"], "Re: Example subject")
         self.assertNotIn("html_top", result)
-        self.assert_equal_to_file(result["html"], "thunderbird_forward_unwrapped.html")
+        self.assert_equal_to_file(
+            result["html"], "thunderbird_forward_unwrapped.html"
+        )
         self.assertNotIn("html_bottom", result)
 
     def test_mailru_forward(self):
         data = self.read_file("mailru_forward.html")
         result = unwrap_html(data)
         self.assertEqual(result["type"], "forward")
-        self.assertEqual(result["from"], "Иван Иванов <ivanivanov@example.com>")
+        self.assertEqual(
+            result["from"], "Иван Иванов <ivanivanov@example.com>"
+        )
         self.assertEqual(result["to"], "Петр Петров <petrpetrov@example.com>")
         self.assertEqual(result["date"], "Среда, 14 июня 2017, 15:19 +03:00")
         self.assertEqual(result["subject"], "Тестовая тема")
         self.assertNotIn("html_top", result)
-        self.assert_equal_to_file(result["html"], "mailru_forward_unwrapped.html")
+        self.assert_equal_to_file(
+            result["html"], "mailru_forward_unwrapped.html"
+        )
         self.assertNotIn("html_bottom", result)
 
 
 class InternalTestCase(unittest.TestCase):
     def test_parse_reply(self):
-
         from quotequail._internal import parse_reply
 
         data = parse_reply(
@@ -999,7 +1014,10 @@ class InternalTestCase(unittest.TestCase):
         )
         self.assertEqual(
             data,
-            {"date": "24.02.2015 um 22:48", "from": "John Doe <john@doe.example>"},
+            {
+                "date": "24.02.2015 um 22:48",
+                "from": "John Doe <john@doe.example>",
+            },
         )
 
         data = parse_reply(
@@ -1029,7 +1047,10 @@ class InternalTestCase(unittest.TestCase):
         )
         self.assertEqual(
             data,
-            {"date": "2016-03-14, at 20:26", "from": "John Doe <john@doe.example>"},
+            {
+                "date": "2016-03-14, at 20:26",
+                "from": "John Doe <john@doe.example>",
+            },
         )
 
         data = parse_reply(
@@ -1048,14 +1069,21 @@ class InternalTestCase(unittest.TestCase):
         )
         self.assertEqual(
             data,
-            {"date": "02.10.2013 \xe0 11:13", "from": "John Doe <john@doe.example>"},
+            {
+                "date": "02.10.2013 \xe0 11:13",
+                "from": "John Doe <john@doe.example>",
+            },
         )
 
         data = parse_reply("El 11/07/2012 06:13 p.m., John Doe escribió:")
-        self.assertEqual(data, {"date": "11/07/2012 06:13 p.m.", "from": "John Doe"})
+        self.assertEqual(
+            data, {"date": "11/07/2012 06:13 p.m.", "from": "John Doe"}
+        )
 
         data = parse_reply("El 06/04/2010, a las 13:13, John Doe escribió:")
-        self.assertEqual(data, {"date": "06/04/2010, a las 13:13", "from": "John Doe"})
+        self.assertEqual(
+            data, {"date": "06/04/2010, a las 13:13", "from": "John Doe"}
+        )
 
         data = parse_reply("2009/5/12 John Doe <john@doe.example>")
         self.assertEqual(
@@ -1071,7 +1099,10 @@ class InternalTestCase(unittest.TestCase):
         )
         self.assertEqual(
             data,
-            {"date": "24 februari 2015 22:48", "from": "John Doe <john@doe.example>"},
+            {
+                "date": "24 februari 2015 22:48",
+                "from": "John Doe <john@doe.example>",
+            },
         )
 
         # Brazillian portuguese
@@ -1094,10 +1125,15 @@ class InternalHTMLTestCase(unittest.TestCase):
         self.assertEqual(extract_headers([], 2), ({}, 0))
         self.assertEqual(extract_headers(["test"], 2), ({}, 0))
         self.assertEqual(
-            extract_headers(["From: b", "To: c"], 2), ({"from": "b", "to": "c"}, 2)
+            extract_headers(["From: b", "To: c"], 2),
+            ({"from": "b", "to": "c"}, 2),
         )
-        self.assertEqual(extract_headers(["From: b", "foo"], 2), ({"from": "b foo"}, 2))
-        self.assertEqual(extract_headers(["From: b", "foo"], 1), ({"from": "b"}, 1))
+        self.assertEqual(
+            extract_headers(["From: b", "foo"], 2), ({"from": "b foo"}, 2)
+        )
+        self.assertEqual(
+            extract_headers(["From: b", "foo"], 1), ({"from": "b"}, 1)
+        )
         self.assertEqual(
             extract_headers(["From: b", "To: c", "", "other line"], 2),
             ({"from": "b", "to": "c"}, 2),
@@ -1124,7 +1160,11 @@ class InternalHTMLTestCase(unittest.TestCase):
         )
         self.assertEqual(
             extract_headers(
-                ["From: some very very very long name <", "verylong@example.com>"], 1
+                [
+                    "From: some very very very long name <",
+                    "verylong@example.com>",
+                ],
+                1,
             ),
             (
                 {
@@ -1170,7 +1210,9 @@ class InternalHTMLTestCase(unittest.TestCase):
             ],
         )
 
-        tree = _html.get_html_tree("<div><blockquote>hi</blockquote>world</div>")
+        tree = _html.get_html_tree(
+            "<div><blockquote>hi</blockquote>world</div>"
+        )
         data = list(_html.tree_line_generator(tree))
         div = tree.xpath("div")[0]
         blockquote = tree.xpath("div/blockquote")[0]
@@ -1206,12 +1248,15 @@ class InternalHTMLTestCase(unittest.TestCase):
 
         tree = _html.get_html_tree(html)
         _html.trim_tree_after(tree.find("div/span"))
-        self.assertEqual(_html.render_html_tree(tree), "<div>A<span>B</span></div>")
+        self.assertEqual(
+            _html.render_html_tree(tree), "<div>A<span>B</span></div>"
+        )
 
         tree = _html.get_html_tree(html)
         _html.trim_tree_after(tree.find("div/span[2]"))
         self.assertEqual(
-            _html.render_html_tree(tree), "<div>A<span>B</span>C<span>D</span></div>"
+            _html.render_html_tree(tree),
+            "<div>A<span>B</span>C<span>D</span></div>",
         )
 
         tree = _html.get_html_tree(html)
@@ -1220,7 +1265,9 @@ class InternalHTMLTestCase(unittest.TestCase):
 
         tree = _html.get_html_tree(html)
         _html.trim_tree_after(tree.find("div/span[2]"), include_element=False)
-        self.assertEqual(_html.render_html_tree(tree), "<div>A<span>B</span>C</div>")
+        self.assertEqual(
+            _html.render_html_tree(tree), "<div>A<span>B</span>C</div>"
+        )
 
     def test_trim_before(self):
         from quotequail import _html
@@ -1230,16 +1277,21 @@ class InternalHTMLTestCase(unittest.TestCase):
         tree = _html.get_html_tree(html)
         _html.trim_tree_before(tree.find("div/span"))
         self.assertEqual(
-            _html.render_html_tree(tree), "<div><span>B</span>C<span>D</span>E</div>"
+            _html.render_html_tree(tree),
+            "<div><span>B</span>C<span>D</span>E</div>",
         )
 
         tree = _html.get_html_tree(html)
         _html.trim_tree_before(tree.find("div/span[2]"))
-        self.assertEqual(_html.render_html_tree(tree), "<div><span>D</span>E</div>")
+        self.assertEqual(
+            _html.render_html_tree(tree), "<div><span>D</span>E</div>"
+        )
 
         tree = _html.get_html_tree(html)
         _html.trim_tree_before(tree.find("div/span"), include_element=False)
-        self.assertEqual(_html.render_html_tree(tree), "<div>C<span>D</span>E</div>")
+        self.assertEqual(
+            _html.render_html_tree(tree), "<div>C<span>D</span>E</div>"
+        )
 
         tree = _html.get_html_tree(html)
         _html.trim_tree_before(tree.find("div/span[2]"), include_element=False)

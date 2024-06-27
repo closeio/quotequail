@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # quotequail
 # a library that identifies quoted text in email messages
 
@@ -16,12 +15,14 @@ def quote(text, limit=1000):
 
     Example: [(True, 'expanded text'), (False, '> Some quoted text')]
 
-    Unless the limit param is set to None, the text will automatically be quoted
-    starting at the line where the limit is reached.
+    Unless the limit param is set to None, the text will automatically be
+    quoted starting at the line where the limit is reached.
     """
     lines = text.split("\n")
 
-    found = _internal.find_quote_position(lines, _patterns.MAX_WRAP_LINES, limit)
+    found = _internal.find_quote_position(
+        lines, _patterns.MAX_WRAP_LINES, limit
+    )
 
     if found is not None:
         return [
@@ -49,11 +50,11 @@ def quote_html(html, limit=1000):
     if found is None:
         # No quoting found and we're below limit. We're done.
         return [(True, _html.render_html_tree(tree))]
-    else:
-        start_tree = _html.slice_tree(
-            tree, start_refs, end_refs, (0, found + 1), html_copy=html
-        )
-        end_tree = _html.slice_tree(tree, start_refs, end_refs, (found + 1, None))
+
+    start_tree = _html.slice_tree(
+        tree, start_refs, end_refs, (0, found + 1), html_copy=html
+    )
+    end_tree = _html.slice_tree(tree, start_refs, end_refs, (found + 1, None))
 
     return [
         (True, _html.render_html_tree(start_tree)),
@@ -83,35 +84,37 @@ def unwrap(text):
         _patterns.MIN_HEADER_LINES,
         _patterns.MIN_QUOTED_LINES,
     )
-    if result:
-        typ, top_range, hdrs, main_range, bottom_range, needs_unindent = result
+    if not result:
+        return None
 
-        text_top = lines[slice(*top_range)] if top_range else ""
-        text = lines[slice(*main_range)] if main_range else ""
-        text_bottom = lines[slice(*bottom_range)] if bottom_range else ""
+    typ, top_range, hdrs, main_range, bottom_range, needs_unindent = result
 
-        if needs_unindent:
-            text = _internal.unindent_lines(text)
+    text_top = lines[slice(*top_range)] if top_range else ""
+    text = lines[slice(*main_range)] if main_range else ""
+    text_bottom = lines[slice(*bottom_range)] if bottom_range else ""
 
-        result = {
-            "type": typ,
-        }
+    if needs_unindent:
+        text = _internal.unindent_lines(text)
 
-        text = "\n".join(text).strip()
-        text_top = "\n".join(text_top).strip()
-        text_bottom = "\n".join(text_bottom).strip()
+    result = {
+        "type": typ,
+    }
 
-        if text:
-            result["text"] = text
-        if text_top:
-            result["text_top"] = text_top
-        if text_bottom:
-            result["text_bottom"] = text_bottom
+    text = "\n".join(text).strip()
+    text_top = "\n".join(text_top).strip()
+    text_bottom = "\n".join(text_bottom).strip()
 
-        if hdrs:
-            result.update(hdrs)
+    if text:
+        result["text"] = text
+    if text_top:
+        result["text_top"] = text_top
+    if text_bottom:
+        result["text_bottom"] = text_bottom
 
-        return result
+    if hdrs:
+        result.update(hdrs)
+
+    return result
 
 
 def unwrap_html(html):
@@ -164,7 +167,9 @@ def unwrap_html(html):
                 result["html_bottom"] = html_bottom
 
         if main_range:
-            main_tree = _html.slice_tree(tree, start_refs, end_refs, main_range)
+            main_tree = _html.slice_tree(
+                tree, start_refs, end_refs, main_range
+            )
             if needs_unindent:
                 _html.unindent_tree(main_tree)
             html = _html.render_html_tree(main_tree)

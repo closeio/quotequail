@@ -21,8 +21,10 @@ jobs:
 
       - name: Lint code
         run: |
-          pip install lintlizard==0.18.0 "click<8.1"
-          lintlizard
+          pip install ruff==0.5.0
+          ruff check
+          ruff format --check
+          ruff check --select I
 
   # Run tests
   test:
