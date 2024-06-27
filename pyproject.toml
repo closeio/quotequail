@@ -1,10 +1,56 @@
-[tool.black]
-target-version = ['py37']
-exclude = '''
-/(
-    \.git
-  | \.venv
-  | venv
-  | src
-)/
-'''
+[tool.ruff]
+target-version = "py39"
+line-length = 79
+
+[tool.ruff.lint]
+ignore = [
+    "ISC001",
+    "PLR2004",
+    "TRY003",
+    # Some patterns contain special characters.
+    "PLR0911",
+    "RUF001",
+]
+select = [
+    "A001",
+    "B",
+    "C",
+    "E",
+    "EXE",
+    "F",
+    "G",
+    "I",
+    "INP",
+    "ISC",
+    "N",
+    "PGH",
+    "PIE",
+    "PL",
+    "PT",
+    "RET",
+    "RUF",
+    "S",
+    "SIM",
+    "T",
+    "TCH",
+    "TID25",
+    "TRY",
+    "UP",
+    "W",
+    # Consider enabling later.
+    # "ANN",
+    # "PTH",
+]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+forced-separate = ["tests"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 15
+
+[tool.ruff.lint.pylint]
+max-branches = 16
+
+[tool.ruff.lint.per-file-ignores]
+"tests/test_quotequail.py" = ["E501", "PT009"]

@@ -1,7 +1,4 @@
-# -*- coding: utf-8 -*-
-
 import re
-from typing import List
 
 REPLY_PATTERNS = [
     "^On (.*) wrote:$",  # apple mail/gmail reply
@@ -14,7 +11,9 @@ REPLY_PATTERNS = [
     "([0-9]{4}/[0-9]{1,2}/[0-9]{1,2}) (.* <.*@.*>)$",  # gmail (?) reply
 ]
 
-REPLY_DATE_SPLIT_REGEX = re.compile(r"^(.*(:[0-9]{2}( [apAP]\.?[mM]\.?)?)), (.*)?$")
+REPLY_DATE_SPLIT_REGEX = re.compile(
+    r"^(.*(:[0-9]{2}( [apAP]\.?[mM]\.?)?)), (.*)?$"
+)
 
 FORWARD_MESSAGES = [
     # apple mail forward
@@ -42,7 +41,7 @@ FORWARD_LINE = "________________________________"
 
 FORWARD_PATTERNS = (
     [
-        "^{}$".format(FORWARD_LINE),
+        f"^{FORWARD_LINE}$",
     ]
     + [f"^---+ ?{p} ?---+$" for p in FORWARD_MESSAGES]
     + [f"^{p}:$" for p in FORWARD_MESSAGES]
@@ -101,7 +100,11 @@ COMPILED_PATTERN_MAP = {
     "forward": [re.compile(regex) for regex in FORWARD_PATTERNS],
 }
 
-COMPILED_PATTERNS: List[re.Pattern] = sum(COMPILED_PATTERN_MAP.values(), [])
+COMPILED_PATTERNS: list[re.Pattern] = [
+    pattern
+    for patterns in COMPILED_PATTERN_MAP.values()
+    for pattern in patterns
+]
 
 MULTIPLE_WHITESPACE_RE = re.compile(r"\s+")
 

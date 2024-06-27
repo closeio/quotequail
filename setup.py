@@ -12,10 +12,13 @@ setup(
     url="http://github.com/closeio/quotequail",
     license="MIT",
     author="Thomas Steinacher",
-    author_email="engineering@close.io",
+    author_email="engineering@close.com",
     maintainer="Thomas Steinacher",
-    maintainer_email="engineering@close.io",
-    description="A library that identifies quoted text in plain text and HTML email messages.",
+    maintainer_email="engineering@close.com",
+    description=(
+        "A library that identifies quoted text in plain text and HTML email "
+        "messages."
+    ),
     long_description=__doc__,
     packages=[
         "quotequail",

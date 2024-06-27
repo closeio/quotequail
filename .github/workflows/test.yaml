@@ -11,7 +11,7 @@ jobs:
   lint:
     strategy:
       matrix:
-        python-version: [ '3.8', '3.9', '3.10', '3.11' ]
+        python-version: ['3.9', '3.10', '3.11']
     name: Lint ${{ matrix.python-version }}
     runs-on: 'ubuntu-20.04'
     container: python:${{ matrix.python-version }}
@@ -21,14 +21,16 @@ jobs:
 
       - name: Lint code
         run: |
-          pip install lintlizard==0.18.0 "click<8.1"
-          lintlizard
+          pip install ruff==0.5.0
+          ruff check
+          ruff format --check
+          ruff check --select I
 
   # Run tests
   test:
     strategy:
       matrix:
-        python-version: ['3.8', '3.9', '3.10', '3.11']
+        python-version: ['3.9', '3.10', '3.11']
       # Do not cancel any jobs when a single job fails
       fail-fast: false
     name: Python ${{ matrix.python-version }}

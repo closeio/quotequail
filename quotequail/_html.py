@@ -220,7 +220,7 @@ def get_html_tree(html):
     for el in tree.iter():
         if el.nsmap or (isinstance(el.tag, str) and ":" in el.tag):
             if el.nsmap:
-                actual_tag_name = "{}:{}".format(list(el.nsmap.keys())[0], el.tag)
+                actual_tag_name = f"{next(iter(el.nsmap.keys()))}:{el.tag}"
             else:
                 actual_tag_name = el.tag
             el.tag = "span"
@@ -355,7 +355,9 @@ def tree_line_generator(el, max_lines=None):
             line_break = tag_name == "br" and state == BEGIN
             is_block = tag_name not in INLINE_TAGS
             is_forward = (
-                is_block and state == BEGIN and el.attrib.get("style") in FORWARD_STYLES
+                is_block
+                and state == BEGIN
+                and el.attrib.get("style") in FORWARD_STYLES
             )
 
             if is_block or line_break:
@@ -371,7 +373,12 @@ def tree_line_generator(el, max_lines=None):
 
                     if is_forward:
                         # Simulate forward
-                        yield (end_ref, end_ref, start_indentation_level, FORWARD_LINE)
+                        yield (
+                            end_ref,
+                            end_ref,
+                            start_indentation_level,
+                            FORWARD_LINE,
+                        )
                         counter += 1
                         if max_lines is not None and counter > max_lines:
                             return
@@ -384,7 +391,7 @@ def tree_line_generator(el, max_lines=None):
             line += token
 
         else:
-            raise RuntimeError("invalid token: {}".format(token))
+            raise RuntimeError(f"invalid token: {token}")
 
     line = _trim_spaces(line)
     if line:
@@ -402,9 +409,8 @@ def indented_tree_line_generator(el, max_lines=None):
     gen = tree_line_generator(el, max_lines)
     for start_ref, end_ref, indentation_level, line in gen:
         # Escape line
-        if line.startswith(">"):
-            line = "\\" + line
-        yield start_ref, end_ref, "> " * indentation_level + line
+        full_line = "\\" + line if line.startswith(">") else line
+        yield start_ref, end_ref, "> " * indentation_level + full_line
 
 
 def get_line_info(tree, max_lines=None):
@@ -417,5 +423,4 @@ def get_line_info(tree, max_lines=None):
     line_gen_result = list(zip(*line_gen))
     if line_gen_result:
         return line_gen_result
-    else:
-        return [], [], []
+    return [], [], []
