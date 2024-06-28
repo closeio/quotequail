@@ -48,8 +48,16 @@ FORWARD_PATTERNS = (
 )
 
 FORWARD_STYLES = [
-    # Outlook
-    "border:none;border-top:solid #B5C4DF 1.0pt;padding:3.0pt 0in 0in 0in",
+    # Outlook starts forwards directly with the "From: " line but we can catch
+    # it with the header to avoid falsely identifying a forward
+    # - #B5C4DF and #E1E1E1 are known border colors.
+    # - "padding:3.0pt 0in 0in 0in" and "padding:3.0pt 0cm 0cm 0cm" are known
+    #   paddings.
+    re.compile(
+        r"^border:none;border-top:solid #[0-9a-fA-f]{6} 1\.0pt;"
+        r"padding:3\.0pt 0(in|cm) 0(in|cm) 0(in|cm)$",
+        re.UNICODE,
+    ),
 ]
 
 HEADER_RE = re.compile(r"\*?([-\w ]+):\*?(.*)$", re.UNICODE)
