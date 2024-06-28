@@ -3,7 +3,7 @@
 
 from . import _internal, _patterns
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 __all__ = ["quote", "quote_html", "unwrap", "unwrap_html"]
 
 
