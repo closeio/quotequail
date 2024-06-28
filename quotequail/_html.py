@@ -1,4 +1,5 @@
 # HTML utils
+import enum
 from collections.abc import Iterator
 from typing import TYPE_CHECKING, TypeAlias
 
@@ -10,8 +11,14 @@ if TYPE_CHECKING:
 
 from ._patterns import FORWARD_LINE, FORWARD_STYLES, MULTIPLE_WHITESPACE_RE
 
+
+class Position(enum.Enum):
+    Begin = "begin"
+    End = "end"
+
+
 Element: TypeAlias = "HtmlElement"
-ElementRef = tuple["Element", str]
+ElementRef = tuple["Element", Position]
 
 INLINE_TAGS = [
     "a",
@@ -30,9 +37,6 @@ INLINE_TAGS = [
     "td",
     "th",
 ]
-
-BEGIN = "begin"
-END = "end"
 
 
 def trim_tree_after(element: Element, include_element: bool = True):
@@ -184,9 +188,9 @@ def slice_tree(
         new_tree = tree
 
     if start_ref:
-        include_start = start_ref[1] == BEGIN
+        include_start = start_ref[1] is Position.Begin
     if end_ref:
-        include_end = end_ref[1] == END
+        include_end = end_ref[1] is Position.End
 
     # If start_ref is the same as end_ref, and we don't include the element,
     # we are removing the entire tree. We need to handle this separately,
@@ -283,14 +287,14 @@ def is_indentation_element(element: Element) -> bool:
 
 def tree_token_generator(
     el: Element, indentation_level: int = 0
-) -> Iterator[None | tuple[Element, str, int] | str]:
+) -> Iterator[None | tuple[Element, Position, int] | str]:
     """
     Yield tokens for the given HTML element as follows:
 
-    - A tuple (LXML element, BEGIN, indentation_level)
+    - A tuple (LXML element, Begin, indentation_level)
     - Text right after the start of the tag, or None.
     - Recursively calls the token generator for all child objects
-    - A tuple (LXML element, END, indentation_level)
+    - A tuple (LXML element, End, indentation_level)
     - Text right after the end of the tag, or None.
     """
     if not isinstance(el.tag, str):
@@ -301,7 +305,7 @@ def tree_token_generator(
     if is_indentation:
         indentation_level += 1
 
-    yield (el, BEGIN, indentation_level)
+    yield (el, Position.Begin, indentation_level)
 
     yield el.text
 
@@ -311,7 +315,7 @@ def tree_token_generator(
     if is_indentation:
         indentation_level -= 1
 
-    yield (el, END, indentation_level)
+    yield (el, Position.End, indentation_level)
 
     yield el.tail
 
@@ -320,7 +324,10 @@ def tree_line_generator(
     el: Element, max_lines: int | None = None
 ) -> Iterator[
     tuple[
-        tuple[ElementRef, str] | None, tuple[ElementRef, str] | None, int, str
+        tuple[ElementRef, Position] | None,
+        tuple[ElementRef, Position] | None,
+        int,
+        str,
     ]
 ]:
     """
@@ -343,14 +350,14 @@ def tree_line_generator(
 
     For example, the HTML tree "<div>foo <span>bar</span><br>baz</div>" yields:
 
-    - ((<Element div>, 'begin'), (<Element br>, 'begin'), 0, 'foo bar')
-    - ((<Element br>, 'end'), (<Element div>, 'end'), 0, 'baz').
+    - ((<Element div>, Begin), (<Element br>, Begin), 0, 'foo bar')
+    - ((<Element br>, End), (<Element div>, End), 0, 'baz').
 
     To illustrate the indentation level, the HTML tree
     '<div><blockquote>hi</blockquote>world</div>' yields:
 
-    - ((<Element blockquote>, 'begin'), (<Element blockquote>, 'end'), 1, 'hi')
-    - ((<Element blockquote>, 'end'), (<Element div>, 'end'), 0, 'world')
+    - ((<Element blockquote>, Begin), (<Element blockquote>, End), 1, 'hi')
+    - ((<Element blockquote>, End), (<Element div>, End), 0, 'world')
     """
 
     def _trim_spaces(text: str) -> str:
@@ -378,11 +385,11 @@ def tree_line_generator(
 
             tag_name = el.tag.lower()
 
-            line_break = tag_name == "br" and state == BEGIN
+            line_break = tag_name == "br" and state is Position.Begin
             is_block = tag_name not in INLINE_TAGS
             is_forward = (
                 is_block
-                and state == BEGIN
+                and state is Position.Begin
                 and (style := el.attrib.get("style"))
                 and any(style_re.match(style) for style_re in FORWARD_STYLES)
             )
