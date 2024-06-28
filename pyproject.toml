@@ -6,6 +6,7 @@ line-length = 79
 ignore = [
     "ISC001",
     "PLR2004",
+    "S101",
     "TRY003",
     # Some patterns contain special characters.
     "PLR0911",
