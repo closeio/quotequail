@@ -3,7 +3,7 @@
 
 from . import _internal, _patterns
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 __all__ = ["quote", "quote_html", "unwrap", "unwrap_html"]
 
 
@@ -141,46 +141,48 @@ def unwrap_html(html: str) -> dict[str, str] | None:
 
     unwrap_result = _internal.unwrap(lines, 1, _patterns.MIN_HEADER_LINES, 1)
 
-    if unwrap_result:
-        typ, top_range, hdrs, main_range, bottom_range, needs_unindent = (
-            unwrap_result
+    if not unwrap_result:
+        return None
+
+    typ, top_range, hdrs, main_range, bottom_range, needs_unindent = (
+        unwrap_result
+    )
+
+    result = {
+        "type": typ,
+    }
+
+    top_range_slice = _html.trim_slice(lines, top_range)
+    main_range_slice = _html.trim_slice(lines, main_range)
+    bottom_range_slice = _html.trim_slice(lines, bottom_range)
+
+    if top_range_slice:
+        top_tree = _html.slice_tree(
+            tree, start_refs, end_refs, top_range_slice, html_copy=html
         )
+        html_top = _html.render_html_tree(top_tree)
+        if html_top:
+            result["html_top"] = html_top
 
-        result = {
-            "type": typ,
-        }
+    if bottom_range_slice:
+        bottom_tree = _html.slice_tree(
+            tree, start_refs, end_refs, bottom_range_slice, html_copy=html
+        )
+        html_bottom = _html.render_html_tree(bottom_tree)
+        if html_bottom:
+            result["html_bottom"] = html_bottom
 
-        top_range_slice = _html.trim_slice(lines, top_range)
-        main_range_slice = _html.trim_slice(lines, main_range)
-        bottom_range_slice = _html.trim_slice(lines, bottom_range)
+    if main_range_slice:
+        main_tree = _html.slice_tree(
+            tree, start_refs, end_refs, main_range_slice
+        )
+        if needs_unindent:
+            _html.unindent_tree(main_tree)
+        html = _html.render_html_tree(main_tree)
+        if html:
+            result["html"] = html
 
-        if top_range_slice:
-            top_tree = _html.slice_tree(
-                tree, start_refs, end_refs, top_range_slice, html_copy=html
-            )
-            html_top = _html.render_html_tree(top_tree)
-            if html_top:
-                result["html_top"] = html_top
-
-        if bottom_range_slice:
-            bottom_tree = _html.slice_tree(
-                tree, start_refs, end_refs, bottom_range_slice, html_copy=html
-            )
-            html_bottom = _html.render_html_tree(bottom_tree)
-            if html_bottom:
-                result["html_bottom"] = html_bottom
-
-        if main_range_slice:
-            main_tree = _html.slice_tree(
-                tree, start_refs, end_refs, main_range_slice
-            )
-            if needs_unindent:
-                _html.unindent_tree(main_tree)
-            html = _html.render_html_tree(main_tree)
-            if html:
-                result["html"] = html
-
-        if hdrs:
-            result.update(hdrs)
+    if hdrs:
+        result.update(hdrs)
 
     return result

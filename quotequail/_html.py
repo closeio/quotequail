@@ -187,10 +187,8 @@ def slice_tree(
     else:
         new_tree = tree
 
-    if start_ref:
-        include_start = start_ref[1] is Position.Begin
-    if end_ref:
-        include_end = end_ref[1] is Position.End
+    include_start = start_ref[1] is Position.Begin if start_ref else False
+    include_end = end_ref[1] is Position.End if end_ref else False
 
     # If start_ref is the same as end_ref, and we don't include the element,
     # we are removing the entire tree. We need to handle this separately,

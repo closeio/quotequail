@@ -1,5 +1,8 @@
 # Changes
 
+## v0.3.1
+* Fix `unwrap_html` when no result was found.
+
 ## v0.3.0
 
 * Code quality improvements: linting, typing
