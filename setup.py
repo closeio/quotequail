@@ -28,6 +28,7 @@ setup(
     ],
     test_suite="tests",
     tests_require=["lxml"],
+    install_requires=["typing_extensions>=4.1"],
     platforms="any",
     classifiers=[
         "Environment :: Web Environment",
