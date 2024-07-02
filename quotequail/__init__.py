@@ -2,42 +2,66 @@
 # a library that identifies quoted text in email messages
 
 from . import _internal, _patterns
+from ._enums import Position
 
 __version__ = "0.3.1"
 __all__ = ["quote", "quote_html", "unwrap", "unwrap_html"]
 
 
-def quote(text: str, limit: int = 1000) -> list[tuple[bool, str]]:
+def quote(
+    text: str, *, limit: int = 1000, quote_intro_line: bool = False
+) -> list[tuple[bool, str]]:
     """
-    Take a plain text message as an argument, return a list of tuples. The
-    first argument of the tuple denotes whether the text should be expanded by
-    default. The second argument is the unmodified corresponding text.
+    Divide email body into quoted parts.
 
-    Example: [(True, 'expanded text'), (False, '> Some quoted text')]
+    Args:
+        text: Plain text message.
+        limit: If set, the text will automatically be quoted starting at the
+            line where the limit is reached.
+        quote_intro_line: Whether the line introducing the quoted text ("On ...
+            wrote:" / "Begin forwarded message:") should be part of the quoted
+            text.
 
-    Unless the limit param is set to None, the text will automatically be
-    quoted starting at the line where the limit is reached.
+    Returns:
+        List of tuples: The first argument of the tuple denotes whether the
+        text should be expanded by default. The second argument is the
+        unmodified corresponding text.
+
+        Example: [(True, 'expanded text'), (False, '> Some quoted text')]
     """
     lines = text.split("\n")
 
+    position = Position.Begin if quote_intro_line else Position.End
     found = _internal.find_quote_position(
-        lines, _patterns.MAX_WRAP_LINES, limit
+        lines,
+        _patterns.MAX_WRAP_LINES,
+        limit=limit,
+        position=position,
     )
 
-    if found is not None:
-        return [
-            (True, "\n".join(lines[: found + 1])),
-            (False, "\n".join(lines[found + 1 :])),
-        ]
+    if found is None:
+        return [(True, text)]
 
-    return [(True, text)]
+    split_idx = found if quote_intro_line else found + 1
+    return [
+        (True, "\n".join(lines[:split_idx])),
+        (False, "\n".join(lines[split_idx:])),
+    ]
 
 
-def quote_html(html: str, limit: int = 1000) -> list[tuple[bool, str]]:
+def quote_html(
+    html: str, *, limit: int = 1000, quote_intro_line: bool = False
+) -> list[tuple[bool, str]]:
     """
-    Like quote(), but takes an HTML message as an argument. The limit param
-    represents the maximum number of lines to traverse until quoting the rest
-    of the markup. Lines are separated by block elements or <br>.
+    Like quote(), but takes an HTML message as an argument.
+
+    Args:
+        html: HTML message.
+        limit: Maximum number of lines to traverse until quoting the rest of
+            the markup. Lines are separated by block elements or <br>.
+        quote_intro_line: Whether the line introducing the quoted text ("On ...
+            wrote:" / "Begin forwarded message:") should be part of the quoted
+            text.
     """
     from . import _html
 
@@ -45,16 +69,20 @@ def quote_html(html: str, limit: int = 1000) -> list[tuple[bool, str]]:
 
     start_refs, end_refs, lines = _html.get_line_info(tree, limit + 1)
 
-    found = _internal.find_quote_position(lines, 1, limit)
+    position = Position.Begin if quote_intro_line else Position.End
+    found = _internal.find_quote_position(
+        lines, 1, limit=limit, position=position
+    )
 
     if found is None:
         # No quoting found and we're below limit. We're done.
         return [(True, _html.render_html_tree(tree))]
 
+    split_idx = found if quote_intro_line else found + 1
     start_tree = _html.slice_tree(
-        tree, start_refs, end_refs, (0, found + 1), html_copy=html
+        tree, start_refs, end_refs, (0, split_idx), html_copy=html
     )
-    end_tree = _html.slice_tree(tree, start_refs, end_refs, (found + 1, None))
+    end_tree = _html.slice_tree(tree, start_refs, end_refs, (split_idx, None))
 
     return [
         (True, _html.render_html_tree(start_tree)),
