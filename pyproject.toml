@@ -57,7 +57,6 @@ max-branches = 16
 "tests/test_internal.py" = ["E501"]
 "tests/test_quote.py" = ["E501"]
 "tests/test_quote_html.py" = ["E501"]
-"tests/test_quotequail.py" = ["E501", "PT009"]
 "tests/test_unwrap.py" = ["E501"]
 "tests/test_unwrap_html.py" = ["E501"]
 
