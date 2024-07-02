@@ -34,7 +34,6 @@ def find_pattern_on_line(
         for regex in regexes:
             for m in range(max_wrap_lines):
                 match_line = join_wrapped_lines(lines[n : n + 1 + m])
-                # print("tryin match line", n, m, match_line)
                 if match_line.startswith(">"):
                     match_line = match_line[1:].strip()
                 # If this line is blank, break out of the innermost loop
@@ -44,7 +43,6 @@ def find_pattern_on_line(
                 if not match_line:
                     break
                 if regex.match(match_line.strip()):
-                    # print("match line", n, m, match_line)
                     match position:
                         case Position.Begin:
                             return n, typ
