@@ -1,5 +1,4 @@
 # HTML utils
-import enum
 from collections.abc import Iterator
 from typing import TYPE_CHECKING, TypeAlias
 
@@ -9,13 +8,8 @@ import lxml.html
 if TYPE_CHECKING:
     from lxml.html import HtmlElement
 
+from ._enums import Position
 from ._patterns import FORWARD_LINE, FORWARD_STYLES, MULTIPLE_WHITESPACE_RE
-
-
-class Position(enum.Enum):
-    Begin = "begin"
-    End = "end"
-
 
 Element: TypeAlias = "HtmlElement"
 ElementRef = tuple["Element", Position]
