@@ -1,3 +1,6 @@
+from typing_extensions import assert_never
+
+from ._enums import Position
 from ._patterns import (
     COMPILED_PATTERN_MAP,
     HEADER_MAP,
@@ -13,7 +16,10 @@ documentation see the corresponding constants in _patterns.py.
 
 
 def find_pattern_on_line(
-    lines: list[str], n: int, max_wrap_lines: int
+    lines: list[str],
+    n: int,
+    max_wrap_lines: int,
+    position: Position,
 ) -> tuple[int, str] | None:
     """
     Find a forward/reply pattern within the given lines on text on the given
@@ -30,20 +36,42 @@ def find_pattern_on_line(
                 match_line = join_wrapped_lines(lines[n : n + 1 + m])
                 if match_line.startswith(">"):
                     match_line = match_line[1:].strip()
+                # If this line is blank, break out of the innermost loop
+                # at m == 0 so that if the quoting starts in the following
+                # line, we'll correctly detect the start of the quoting
+                # position.
+                if not match_line:
+                    break
                 if regex.match(match_line.strip()):
-                    return n + m, typ
+                    match position:
+                        case Position.Begin:
+                            return n, typ
+                        case Position.End:
+                            return n + m, typ
+                        case _:
+                            assert_never(position)
     return None
 
 
 def find_quote_position(
-    lines: list[str], max_wrap_lines: int, limit: int | None = None
+    lines: list[str],
+    max_wrap_lines: int,
+    limit: int | None = None,
+    position: Position = Position.End,
 ) -> int | None:
     """
-    Return the (ending) line number of a quoting pattern. If a limit is given
-    and the limit is reached, the limit is returned.
+    Return the beginning or ending line number of a quoting pattern.
+
+    Args:
+        lines: List of lines of text.
+        max_wrap_lines: Amount to lines to join to check for potential wrapped
+            patterns.
+        limit: If line limit is given and reached without finding a pattern,
+            the limit is returned.
+        position: Whether to return the beginning or ending line number.
     """
     for n in range(len(lines)):
-        result = find_pattern_on_line(lines, n, max_wrap_lines)
+        result = find_pattern_on_line(lines, n, max_wrap_lines, position)
         if result:
             return result[0]
         if limit is not None and n >= limit - 1:
@@ -189,7 +217,7 @@ def find_unwrap_start(
 
         # Find a forward / reply start pattern
 
-        result = find_pattern_on_line(lines, n, max_wrap_lines)
+        result = find_pattern_on_line(lines, n, max_wrap_lines, Position.End)
         if result:
             end, typ = result
             return n, end, typ

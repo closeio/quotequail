@@ -1,5 +1,9 @@
 # Changes
 
+## v0.4.0
+* Add `quote_intro_line` parameter to `quote` and `quote_html`.
+* Modernize all tests.
+
 ## v0.3.1
 * Fix `unwrap_html` when no result was found.
 
