@@ -7,10 +7,10 @@ quotequail has no mandatory dependencies, however using HTML methods require
 libxml.
 
 
-(Interested in working on projects like this? `Close.io`_ is looking for `great engineers`_ to join our team)
+(Interested in working on projects like this? `Close`_ is looking for `great engineers`_ to join our team)
 
-.. _Close.io: http://close.io
-.. _great engineers: http://jobs.close.io
+.. _Close: https://close.com
+.. _great engineers: https://www.close.com/careers
 
 
 Introduction
