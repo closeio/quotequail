@@ -229,10 +229,14 @@ def get_html_tree(html: str) -> Element:
     # HACK for Outlook emails, where tags like <o:p> are rendered as <p>. We
     # can generally ignore these tags so we replace them with <span>, which
     # doesn't cause a line break. Also, we can't look up the element path of
-    # tags that contain colons. When rendering the tree, we will restore the
-    # tag name.
+    # tags that contain characters which aren't valid in an XPath NameTest
+    # (e.g. ``:`` in ``<o:p>``, or ``@`` in pseudo-tags like
+    # ``<addr@domain>`` that lxml >= 6.0's HTML parser keeps from quoted
+    # reply headers). When rendering the tree, we will restore the tag name.
     for el in tree.iter():
-        if el.nsmap or (isinstance(el.tag, str) and ":" in el.tag):
+        if el.nsmap or (
+            isinstance(el.tag, str) and (":" in el.tag or "@" in el.tag)
+        ):
             if el.nsmap:
                 actual_tag_name = f"{next(iter(el.nsmap.keys()))}:{el.tag}"
             else:
