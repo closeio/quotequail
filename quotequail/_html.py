@@ -1,4 +1,5 @@
 # HTML utils
+import html
 from collections.abc import Iterator
 from typing import TYPE_CHECKING, TypeAlias
 
@@ -226,19 +227,34 @@ def get_html_tree(html_str: str) -> Element:
         htmlb = b"<div>" + htmlb + b"</div>"
         tree = lxml.html.fromstring(htmlb, parser=parser)
 
-    # HACK for Outlook emails, where tags like <o:p> are rendered as <p>. We
-    # can generally ignore these tags so we replace them with <span>, which
-    # doesn't cause a line break. Also, we can't look up the element path of
-    # tags that contain colons. When rendering the tree, we will restore the
-    # tag name.
-    for el in tree.iter():
-        if el.nsmap or (isinstance(el.tag, str) and ":" in el.tag):
-            if el.nsmap:
-                actual_tag_name = f"{next(iter(el.nsmap.keys()))}:{el.tag}"
-            else:
-                actual_tag_name = el.tag
+    # HACK: `:` and `@` in tag names (Outlook's <o:p>, or unescaped
+    # <addr@domain> from a quoted reply header) crash slice_tree's XPath
+    # lookups later. Rewrite them here.
+    for el in list(tree.iter()):
+        if not isinstance(el.tag, str):
+            # comments / processing instructions
+            continue
+
+        if el.nsmap:
+            # Namespaced (e.g. <v:shape>): rename to <span>, restore on output.
+            prefix = next(iter(el.nsmap.keys()))
+            el.attrib["__tag_name"] = f"{prefix}:{el.tag}"
             el.tag = "span"
-            el.attrib["__tag_name"] = actual_tag_name
+
+        elif ":" in el.tag:
+            # Outlook <o:p> padding: same treatment, round-tripped.
+            el.attrib["__tag_name"] = el.tag
+            el.tag = "span"
+
+        elif "@" in el.tag:
+            # Mail client forgot to escape <addr@domain>. Flatten back to
+            # visible text so the address actually renders.
+            attrs = "".join(
+                f' {k}="{html.escape(v, quote=True)}"'
+                for k, v in el.attrib.items()
+            )
+            el.text = f"<{el.tag}{attrs}>" + (el.text or "")
+            el.drop_tag()
 
     return tree
 
