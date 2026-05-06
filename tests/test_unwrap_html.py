@@ -105,6 +105,35 @@ def test_thunderbird_forward(read_file):
     assert "html_bottom" not in result
 
 
+def test_unwrap_html_with_email_address_pseudo_tag():
+    # Some quoted-reply headers contain bare ``Name <addr@domain>`` text. With
+    # lxml >= 6.0 the HTML parser keeps ``<addr@domain>`` as an element with a
+    # tag name containing ``@``. ``getelementpath()`` then emits that raw name
+    # as a path component, which the elementpath tokenizer used by ``find()``
+    # rejects (``@`` is the attribute axis token), raising ``KeyError: '@'``.
+    # ``unwrap_html`` should be resilient to that.
+    html = (
+        "Hey Jane,<br><br>Some reply text.<br>Dan"
+        '<div><span data-system-generated="meta">'
+        "On Sep 04, 2025, 11:30 AM, "
+        "Jane Roe <jane@example.com> wrote:<br>"
+        "</span></div>"
+        "<blockquote>Original message body</blockquote>"
+    )
+
+    # The important guarantee is that ``unwrap_html`` doesn't crash and
+    # returns sensible top/quoted content. The detected ``type`` differs
+    # slightly between lxml versions (lxml 5 strips the bogus ``<jane@...>``
+    # tag at parse time, lxml 6 keeps it; we then coerce it to ``<span>``),
+    # so we don't pin the exact value.
+    result = unwrap_html(html)
+
+    assert result is not None
+    assert result["type"] in {"quote", "reply"}
+    assert "Some reply text" in result["html_top"]
+    assert "Original message body" in result["html"]
+
+
 def test_mailru_forward(read_file):
     data = read_file("mailru_forward.html")
     result = unwrap_html(data)
