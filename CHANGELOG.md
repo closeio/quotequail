@@ -1,5 +1,12 @@
 # Changes
 
+## v0.5.0
+
+* On lxml >= 6 only: unescaped `<addr@domain>` pseudo-tags (common in
+  quoted reply headers) now render as visible escaped text
+  (`&lt;addr@domain&gt;`) instead of an invisible bogus element, and no
+  longer trigger `KeyError: '@'` in `slice_tree`.
+
 ## v0.4.0
 * Add `quote_intro_line` parameter to `quote` and `quote_html`.
 * Modernize all tests.
