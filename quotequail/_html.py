@@ -204,7 +204,7 @@ def slice_tree(
     return new_tree
 
 
-def get_html_tree(html: str) -> Element:
+def get_html_tree(html_str: str) -> Element:
     """
     Given the HTML string, returns a LXML tree object. The tree is wrapped in
     <div> elements if it doesn't have a top level tag or parsing would
@@ -212,7 +212,7 @@ def get_html_tree(html: str) -> Element:
     strip_wrapping().
     """
     parser = lxml.html.HTMLParser(encoding="utf-8")
-    htmlb = html.encode("utf8")
+    htmlb = html_str.encode("utf8")
 
     try:
         tree = lxml.html.fromstring(htmlb, parser=parser)
@@ -243,13 +243,13 @@ def get_html_tree(html: str) -> Element:
     return tree
 
 
-def strip_wrapping(html: str) -> str:
+def strip_wrapping(html_str: str) -> str:
     """
     Remove the wrapping that might have resulted when using get_html_tree().
     """
-    if html.startswith("<div>") and html.endswith("</div>"):
-        html = html[5:-6]
-    return html.strip()
+    if html_str.startswith("<div>") and html_str.endswith("</div>"):
+        html_str = html_str[5:-6]
+    return html_str.strip()
 
 
 def render_html_tree(tree: Element) -> str:
@@ -266,9 +266,9 @@ def render_html_tree(tree: Element) -> str:
             actual_tag_name = el.attrib.pop("__tag_name")
             el.tag = actual_tag_name
 
-    html = lxml.html.tostring(tree, encoding="utf8").decode("utf8")
+    html_str = lxml.html.tostring(tree, encoding="utf8").decode("utf8")
 
-    return strip_wrapping(html)
+    return strip_wrapping(html_str)
 
 
 def is_indentation_element(element: Element) -> bool:
