@@ -1,6 +1,6 @@
 import pytest
 
-from quotequail import unwrap_html
+from quotequail import quote_html, unwrap_html
 
 
 @pytest.mark.parametrize(
@@ -103,6 +103,153 @@ def test_thunderbird_forward(read_file):
     assert "html_top" not in result
     assert result["html"] == read_file("thunderbird_forward_unwrapped.html")
     assert "html_bottom" not in result
+
+
+def test_unwrap_html_ios_mail_reply_with_unescaped_address(read_file):
+    data = read_file("ios_mail_reply_unescaped_address.html")
+
+    assert unwrap_html(data) == {
+        "type": "reply",
+        "date": "Sep 4, 2025, at 11:30 AM",
+        "from": "Jane Roe <jane@example.com>",
+        "html_top": (
+            '<html><head><meta http-equiv="content-type" '
+            'content="text/html; charset=utf-8"></head>'
+            '<body dir="auto"><div dir="ltr">'
+            "Sounds good, I'll be there at 2.</div>"
+            '<div dir="ltr"><br></div>'
+            '<div dir="ltr">Sent from my iPhone</div>'
+            "</body></html>"
+        ),
+        "html": (
+            '<html><head><meta http-equiv="content-type" '
+            'content="text/html; charset=utf-8"></head>'
+            '<body dir="auto"><div><div dir="ltr">'
+            '<div dir="ltr">'
+            "Hey - can we reschedule our 1pm to 2pm tomorrow?"
+            "</div>"
+            '<div dir="ltr"><br></div>'
+            '<div dir="ltr">Thanks,<br>Jane</div>'
+            "</div></div></body></html>"
+        ),
+    }
+
+
+def test_unwrap_html_yahoo_reply_with_unescaped_address(read_file):
+    data = read_file("yahoo_reply_unescaped_address.html")
+
+    assert unwrap_html(data) == {
+        "type": "reply",
+        "date": "Thursday, September 4, 2025 at 11:30:41 AM EDT",
+        "from": "Jane Roe <jane@example.com>",
+        "html_top": (
+            "<html>\n <head></head>\n <body>\n  "
+            '<div dir="ltr">Thanks Jane, that looks great. '
+            "One question on item 2 - can we ship it before "
+            "Friday?<br><br>Dan</div></body></html>"
+        ),
+        "html": (
+            "<html><head></head>\n <body>"
+            '<div class="ydp9b1f0a55yahoo_quoted" '
+            'id="ydp9b1f0a55yahoo_quoted_5894033310">'
+            "<div style=\"font-family:'Helvetica Neue', Helvetica, "
+            'Arial, sans-serif;font-size:13px;color:#26282a;">'
+            '<div><div id="ydp7a3d9f5fyiv2841930122">'
+            '<div><div dir="ltr">'
+            "Hi Dan,<br><br>Here's the updated quote with three "
+            "line items:<br>\n        <ol>\n         "
+            "<li>Track lights - $1,420</li>\n         "
+            "<li>Pendant fixtures - $890</li>\n         "
+            "<li>Installation labor - $640</li>\n        </ol>\n"
+            "        Let me know if you want any tweaks.<br><br>"
+            "Best,<br>Jane\n       </div>\n      </div>\n     "
+            "</div></div>\n   </div>\n  </div>\n </body>\n</html>"
+        ),
+    }
+
+
+def test_quote_html_ios_mail_reply_with_unescaped_address(read_file):
+    data = read_file("ios_mail_reply_unescaped_address.html")
+
+    assert quote_html(data) == [
+        (
+            True,
+            (
+                '<html><head><meta http-equiv="content-type" '
+                'content="text/html; charset=utf-8"></head>'
+                '<body dir="auto"><div dir="ltr">'
+                "Sounds good, I'll be there at 2.</div>"
+                '<div dir="ltr"><br></div>'
+                '<div dir="ltr">Sent from my iPhone</div>'
+                '<div dir="ltr"><br>'
+                "On Sep 4, 2025, at 11:30 AM, "
+                "Jane Roe &lt;jane@example.com&gt; wrote:"
+                "</div></body></html>"
+            ),
+        ),
+        (
+            False,
+            (
+                '<html><head><meta http-equiv="content-type" '
+                'content="text/html; charset=utf-8"></head>'
+                '<body dir="auto"><div dir="ltr"><br></div>'
+                '<blockquote type="cite"><div dir="ltr">'
+                '<meta http-equiv="content-type" '
+                'content="text/html; charset=utf-8">'
+                '<div dir="ltr">'
+                "Hey - can we reschedule our 1pm to 2pm tomorrow?"
+                "</div>"
+                '<div dir="ltr"><br></div>'
+                '<div dir="ltr">Thanks,<br>Jane</div>'
+                "</div></blockquote></body></html>"
+            ),
+        ),
+    ]
+
+
+def test_quote_html_yahoo_reply_with_unescaped_address(read_file):
+    data = read_file("yahoo_reply_unescaped_address.html")
+
+    assert quote_html(data) == [
+        (
+            True,
+            (
+                "<html>\n <head></head>\n <body>\n  "
+                '<div dir="ltr">Thanks Jane, that looks great. '
+                "One question on item 2 - can we ship it before "
+                "Friday?<br><br>Dan</div>\n  <div><br></div>\n  "
+                '<div class="ydp9b1f0a55yahoo_quoted" '
+                'id="ydp9b1f0a55yahoo_quoted_5894033310">\n   '
+                "<div style=\"font-family:'Helvetica Neue', Helvetica, "
+                'Arial, sans-serif;font-size:13px;color:#26282a;">'
+                "\n    <div>"
+                "On Thursday, September 4, 2025 at 11:30:41 AM EDT, "
+                "Jane Roe &lt;jane@example.com&gt; wrote:"
+                "</div></div></div></body></html>"
+            ),
+        ),
+        (
+            False,
+            (
+                "<html><head></head>\n <body>"
+                '<div class="ydp9b1f0a55yahoo_quoted" '
+                'id="ydp9b1f0a55yahoo_quoted_5894033310">'
+                "<div style=\"font-family:'Helvetica Neue', Helvetica, "
+                'Arial, sans-serif;font-size:13px;color:#26282a;">'
+                "<div><br></div>\n    <div><br></div>\n    "
+                '<div><div id="ydp7a3d9f5fyiv2841930122">\n      '
+                '<div>\n       <div dir="ltr">'
+                "Hi Dan,<br><br>Here's the updated quote with three "
+                "line items:<br>\n        <ol>\n         "
+                "<li>Track lights - $1,420</li>\n         "
+                "<li>Pendant fixtures - $890</li>\n         "
+                "<li>Installation labor - $640</li>\n        </ol>\n"
+                "        Let me know if you want any tweaks.<br><br>"
+                "Best,<br>Jane\n       </div>\n      </div>\n     "
+                "</div></div>\n   </div>\n  </div>\n </body>\n</html>"
+            ),
+        ),
+    ]
 
 
 def test_mailru_forward(read_file):

@@ -1,4 +1,5 @@
 # HTML utils
+import html
 from collections.abc import Iterator
 from typing import TYPE_CHECKING, TypeAlias
 
@@ -204,7 +205,7 @@ def slice_tree(
     return new_tree
 
 
-def get_html_tree(html: str) -> Element:
+def get_html_tree(html_str: str) -> Element:
     """
     Given the HTML string, returns a LXML tree object. The tree is wrapped in
     <div> elements if it doesn't have a top level tag or parsing would
@@ -212,7 +213,7 @@ def get_html_tree(html: str) -> Element:
     strip_wrapping().
     """
     parser = lxml.html.HTMLParser(encoding="utf-8")
-    htmlb = html.encode("utf8")
+    htmlb = html_str.encode("utf8")
 
     try:
         tree = lxml.html.fromstring(htmlb, parser=parser)
@@ -226,30 +227,45 @@ def get_html_tree(html: str) -> Element:
         htmlb = b"<div>" + htmlb + b"</div>"
         tree = lxml.html.fromstring(htmlb, parser=parser)
 
-    # HACK for Outlook emails, where tags like <o:p> are rendered as <p>. We
-    # can generally ignore these tags so we replace them with <span>, which
-    # doesn't cause a line break. Also, we can't look up the element path of
-    # tags that contain colons. When rendering the tree, we will restore the
-    # tag name.
-    for el in tree.iter():
-        if el.nsmap or (isinstance(el.tag, str) and ":" in el.tag):
-            if el.nsmap:
-                actual_tag_name = f"{next(iter(el.nsmap.keys()))}:{el.tag}"
-            else:
-                actual_tag_name = el.tag
+    # HACK: `:` and `@` in tag names (Outlook's <o:p>, or unescaped
+    # <addr@domain> from a quoted reply header) crash slice_tree's XPath
+    # lookups later. Rewrite them here.
+    for el in list(tree.iter()):
+        if not isinstance(el.tag, str):
+            # comments / processing instructions
+            continue
+
+        if el.nsmap:
+            # Namespaced (e.g. <v:shape>): rename to <span>, restore on output.
+            prefix = next(iter(el.nsmap.keys()))
+            el.attrib["__tag_name"] = f"{prefix}:{el.tag}"
             el.tag = "span"
-            el.attrib["__tag_name"] = actual_tag_name
+
+        elif ":" in el.tag:
+            # Outlook <o:p> padding: same treatment, round-tripped.
+            el.attrib["__tag_name"] = el.tag
+            el.tag = "span"
+
+        elif "@" in el.tag:
+            # Mail client forgot to escape <addr@domain>. Flatten back to
+            # visible text so the address actually renders.
+            attrs = "".join(
+                f' {k}="{html.escape(v, quote=True)}"'
+                for k, v in el.attrib.items()
+            )
+            el.text = f"<{el.tag}{attrs}>" + (el.text or "")
+            el.drop_tag()
 
     return tree
 
 
-def strip_wrapping(html: str) -> str:
+def strip_wrapping(html_str: str) -> str:
     """
     Remove the wrapping that might have resulted when using get_html_tree().
     """
-    if html.startswith("<div>") and html.endswith("</div>"):
-        html = html[5:-6]
-    return html.strip()
+    if html_str.startswith("<div>") and html_str.endswith("</div>"):
+        html_str = html_str[5:-6]
+    return html_str.strip()
 
 
 def render_html_tree(tree: Element) -> str:
@@ -266,9 +282,9 @@ def render_html_tree(tree: Element) -> str:
             actual_tag_name = el.attrib.pop("__tag_name")
             el.tag = actual_tag_name
 
-    html = lxml.html.tostring(tree, encoding="utf8").decode("utf8")
+    html_str = lxml.html.tostring(tree, encoding="utf8").decode("utf8")
 
-    return strip_wrapping(html)
+    return strip_wrapping(html_str)
 
 
 def is_indentation_element(element: Element) -> bool:

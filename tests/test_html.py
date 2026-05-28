@@ -104,3 +104,11 @@ def test_trim_before():
     tree = get_html_tree(html)
     trim_tree_before(tree.find("div/span[2]"), include_element=False)
     assert render_html_tree(tree) == "<div>E</div>"
+
+
+def test_get_html_tree_flattens_at_pseudo_tag_with_attributes():
+    # Unescaped <addr@domain attr="..."> pseudo-tags must round-trip as
+    # visible text without losing attribute values.
+    html = '<div>x<addr@domain foo="bar">y</addr@domain>z</div>'
+    rendered = render_html_tree(get_html_tree(html))
+    assert rendered == '<div>x&lt;addr@domain foo="bar"&gt;yz</div>'

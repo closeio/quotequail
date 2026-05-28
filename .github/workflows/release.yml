@@ -9,7 +9,7 @@ on:
 
 jobs:
   build_and_upload:
-    runs-on: 'ubuntu-20.04'
+    runs-on: 'ubuntu-latest'
     environment: production
     permissions:
       # id-token for the trusted publisher setup
