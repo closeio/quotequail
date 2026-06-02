@@ -1,4 +1,5 @@
 # HTML utils
+import contextlib
 import html
 from collections.abc import Iterator
 from typing import TYPE_CHECKING, TypeAlias
@@ -283,7 +284,9 @@ def render_html_tree(tree: Element) -> str:
     for el in tree.iter():
         if "__tag_name" in el.attrib:
             actual_tag_name = el.attrib.pop("__tag_name")
-            el.tag = actual_tag_name
+            # Stored tag name is invalid, leave it
+            with contextlib.suppress(ValueError):
+                el.tag = actual_tag_name
 
     html_str = lxml.html.tostring(tree, encoding="utf8").decode("utf8")
 
