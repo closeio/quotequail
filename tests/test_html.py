@@ -114,13 +114,19 @@ def test_get_html_tree_flattens_at_pseudo_tag_with_attributes():
     assert rendered == '<div>x&lt;addr@domain foo="bar"&gt;yz</div>'
 
 
+def test_get_html_tree_outlook_tag_roundtrip():
+    # Outlook uses <o:p> for paragraph padding. The tag must survive the
+    # get_html_tree → render_html_tree roundtrip unchanged.
+    html = "<div>foo<o:p></o:p>bar</div>"
+    assert render_html_tree(get_html_tree(html)) == "<div>foo<o:p></o:p>bar</div>"
+
+
 def test_get_html_tree_flattens_malformed_tag_with_colon_and_equals():
     # <ahref="https://..."> is parsed by lxml as a tag whose name contains
     # both ':' and '"'/'='. The ':' alone would trigger the Outlook span
     # roundtrip, but restoring that name raises ValueError in lxml 6.x.
     # It must be flattened to visible text instead.
     html = '<div>x<ahref="https://example.com">click</ahref>z</div>'
-
-    rendered = render_html_tree(get_html_tree(html))
-
-    assert rendered == '<div>x<span example.com">clickz</span></div>'
+    assert render_html_tree(get_html_tree(html)) == (
+        '<div>x&lt;ahref="https: example.com"=""&gt;clickz</div>'
+    )
