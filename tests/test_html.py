@@ -112,3 +112,15 @@ def test_get_html_tree_flattens_at_pseudo_tag_with_attributes():
     html = '<div>x<addr@domain foo="bar">y</addr@domain>z</div>'
     rendered = render_html_tree(get_html_tree(html))
     assert rendered == '<div>x&lt;addr@domain foo="bar"&gt;yz</div>'
+
+
+def test_get_html_tree_flattens_malformed_tag_with_colon_and_equals():
+    # <ahref="https://..."> is parsed by lxml as a tag whose name contains
+    # both ':' and '"'/'='. The ':' alone would trigger the Outlook span
+    # roundtrip, but restoring that name raises ValueError in lxml 6.x.
+    # It must be flattened to visible text instead.
+    html = '<div>x<ahref="https://example.com">click</ahref>z</div>'
+
+    rendered = render_html_tree(get_html_tree(html))
+
+    assert rendered == '<div>x<span example.com">clickz</span></div>'
