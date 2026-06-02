@@ -237,6 +237,34 @@ def test_prefix_tag_2():
     ]
 
 
+def test_tag_with_equals_sign():
+    # lxml parses unescaped constructs like <key=value> as a tag whose name
+    # contains '='. getelementpath then produces a path with '=' that lxml's
+    # ElementPath find() cannot parse (KeyError: '='). Verify that quote_html
+    # handles this without crashing and still correctly splits the quote.
+    assert quote_html(
+        "<html><body>"
+        "<div>Here is my reply.</div>"
+        "<div>On Jan 1, Joe <key=value> wrote:</div>"
+        "<blockquote>Original text here.</blockquote>"
+        "</body></html>"
+    ) == [
+        (
+            True,
+            "<html><body>"
+            "<div>Here is my reply.</div>"
+            "<div>On Jan 1, Joe &lt;key=value&gt; wrote:</div>"
+            "</body></html>",
+        ),
+        (
+            False,
+            "<html><body>"
+            "<blockquote>Original text here.</blockquote>"
+            "</body></html>",
+        ),
+    ]
+
+
 def test_encoding():
     # We assume everything is UTF-8
     assert quote_html("""<?xml version="1.0" encoding="ISO-8859-1"?>

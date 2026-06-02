@@ -173,11 +173,13 @@ def slice_tree(
 
         if start_ref:
             selector = et.getelementpath(start_ref[0])
-            start_ref = (new_tree.find(selector), start_ref[1])
+            results = new_tree.xpath(selector)
+            start_ref = (results[0] if results else None, start_ref[1])
 
         if end_ref:
             selector = et.getelementpath(end_ref[0])
-            end_ref = (new_tree.find(selector), end_ref[1])
+            results = new_tree.xpath(selector)
+            end_ref = (results[0] if results else None, end_ref[1])
 
     else:
         new_tree = tree
@@ -246,8 +248,9 @@ def get_html_tree(html_str: str) -> Element:
             el.attrib["__tag_name"] = el.tag
             el.tag = "span"
 
-        elif "@" in el.tag:
-            # Mail client forgot to escape <addr@domain>. Flatten back to
+        elif "@" in el.tag or "=" in el.tag:
+            # Mail client forgot to escape <addr@domain> or used other
+            # XPath-special chars (like =) in tag names. Flatten back to
             # visible text so the address actually renders.
             attrs = "".join(
                 f' {k}="{html.escape(v, quote=True)}"'
