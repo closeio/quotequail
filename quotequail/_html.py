@@ -244,15 +244,18 @@ def get_html_tree(html_str: str) -> Element:
             el.attrib["__tag_name"] = f"{prefix}:{el.tag}"
             el.tag = "span"
 
-        elif ":" in el.tag:
+        elif ":" in el.tag and not any(c in el.tag for c in ('"', "=", " ")):
             # Outlook <o:p> padding: same treatment, round-tripped.
+            # Only applies to genuine namespace tags (e.g. o:p, v:shape).
+            # Tags that contain '"', '=', or spaces alongside ':' are garbage
+            # from malformed HTML (e.g. <ahref="https:...>) and must be
+            # flattened instead, since restoring them would raise ValueError.
             el.attrib["__tag_name"] = el.tag
             el.tag = "span"
 
-        elif "@" in el.tag or "=" in el.tag:
-            # Mail client forgot to escape <addr@domain> or used other
-            # XPath-special chars (like =) in tag names. Flatten back to
-            # visible text so the address actually renders.
+        elif ":" in el.tag or "@" in el.tag or "=" in el.tag:
+            # Malformed tag whose name contains XPath-special or otherwise
+            # invalid characters. Flatten back to visible text.
             attrs = "".join(
                 f' {k}="{html.escape(v, quote=True)}"'
                 for k, v in el.attrib.items()
@@ -284,7 +287,9 @@ def render_html_tree(tree: Element) -> str:
     for el in tree.iter():
         if "__tag_name" in el.attrib:
             actual_tag_name = el.attrib.pop("__tag_name")
-            # Stored tag name is invalid, leave it
+            # If lxml rejects restoring the tag name (malformed input),
+            # leave the element as a span,  __tag_name is already
+            # popped so it won't appear in the output.
             with contextlib.suppress(ValueError):
                 el.tag = actual_tag_name
 
