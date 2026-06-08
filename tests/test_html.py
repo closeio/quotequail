@@ -1,3 +1,6 @@
+import lxml.html
+import pytest
+
 from quotequail._html import (
     Position,
     get_html_tree,
@@ -106,9 +109,48 @@ def test_trim_before():
     assert render_html_tree(tree) == "<div>E</div>"
 
 
-def test_get_html_tree_flattens_at_pseudo_tag_with_attributes():
-    # Unescaped <addr@domain attr="..."> pseudo-tags must round-trip as
-    # visible text without losing attribute values.
-    html = '<div>x<addr@domain foo="bar">y</addr@domain>z</div>'
-    rendered = render_html_tree(get_html_tree(html))
-    assert rendered == '<div>x&lt;addr@domain foo="bar"&gt;yz</div>'
+@pytest.mark.parametrize(
+    ("html", "expected"),
+    [
+        # '@' in tag name — unescaped email-style pseudo-tag
+        (
+            '<div>x<addr@domain foo="bar">y</addr@domain>z</div>',
+            '<div>x&lt;addr@domain foo="bar"&gt;yz</div>',
+        ),
+        # ':' and '"' in tag name — lxml parses <ahref="https://..."> this way
+        (
+            '<div>x<ahref="https://example.com">click</ahref>z</div>',
+            '<div>x&lt;ahref="https: example.com"=""&gt;clickz</div>',
+        ),
+        # ':' and '=' in tag name — e.g. <a:b=c>
+        (
+            "<div>x<a:b=c>click</a:b>z</div>",
+            "<div>x&lt;a:b=c&gt;clickz</div>",
+        ),
+    ],
+)
+def test_get_html_tree_flattens_malformed_tags(html, expected):
+    # Tags whose names contain XPath-special or invalid characters
+    # must be rendered as escaped visible text rather than roundtripped as real
+    # tags,which would raise ValueError in lxml
+    assert render_html_tree(get_html_tree(html)) == expected
+
+
+def test_get_html_tree_outlook_tag_roundtrip():
+    # Outlook uses <o:p> for paragraph padding. The tag must survive the
+    # get_html_tree → render_html_tree roundtrip unchanged.
+    html = "<div>foo<o:p></o:p>bar</div>"
+    assert (
+        render_html_tree(get_html_tree(html)) == "<div>foo<o:p></o:p>bar</div>"
+    )
+
+
+def test_render_html_tree_suppresses_space_in_stored_tag_name():
+    # Verify that if a tag name containing ':' and ' ' somehow ends up in
+    # __tag_name, render_html_tree must not raise ValueError.
+    tree = lxml.html.fragment_fromstring("<div><span>text</span></div>")
+    span = tree.find("span")
+    span.attrib["__tag_name"] = "o:p style"
+    result = render_html_tree(tree)
+    assert "text" in result
+    assert "__tag_name" not in result
