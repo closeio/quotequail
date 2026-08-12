@@ -1,5 +1,11 @@
 # Changes
 
+## v0.5.1
+
+* Fixes for lxml >=6 compatibility
+* Declare lxml as a dependency (#74)
+* Fix KeyError when HTML contains tags with '=' in their name
+
 ## v0.5.0
 
 * On lxml >= 6 only: unescaped `<addr@domain>` pseudo-tags (common in
