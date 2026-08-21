@@ -291,3 +291,15 @@ test ä
 </html>""",
         ),
     ]
+
+
+def test_control_character_in_quoted_block():
+    # Splitting the tree at the quote boundary reassigns parsed text through
+    # lxml's validating setters (trim_tree_before), which reject XML-illegal
+    # characters unless get_html_tree() stripped them from the input.
+    assert quote_html(
+        "<div>reply<blockquote>On foo wrote:<br>quoted\x01stuff</blockquote></div>"
+    ) == [
+        (True, "<div>reply<blockquote>On foo wrote:</blockquote></div>"),
+        (False, "<div><blockquote>quotedstuff</blockquote></div>"),
+    ]

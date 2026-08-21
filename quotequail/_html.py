@@ -11,7 +11,12 @@ if TYPE_CHECKING:
     from lxml.html import HtmlElement
 
 from ._enums import Position
-from ._patterns import FORWARD_LINE, FORWARD_STYLES, MULTIPLE_WHITESPACE_RE
+from ._patterns import (
+    FORWARD_LINE,
+    FORWARD_STYLES,
+    MULTIPLE_WHITESPACE_RE,
+    XML_ILLEGAL_CHARS_RE,
+)
 
 Element: TypeAlias = "HtmlElement"
 ElementRef = tuple["Element", Position]
@@ -215,6 +220,11 @@ def get_html_tree(html_str: str) -> Element:
     otherwise result in an error. The wrapping can be later removed with
     strip_wrapping().
     """
+    # Strip invalid XML characters. The HTML parser tolerates XML-illegal
+    # characters and preserves them into the tree... but they will raise
+    # a ValueError when they are used downstream.
+    html_str = XML_ILLEGAL_CHARS_RE.sub("", html_str)
+
     parser = lxml.html.HTMLParser(encoding="utf-8")
     htmlb = html_str.encode("utf8")
 

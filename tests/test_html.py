@@ -136,6 +136,45 @@ def test_get_html_tree_flattens_malformed_tags(html, expected):
     assert render_html_tree(get_html_tree(html)) == expected
 
 
+@pytest.mark.parametrize(
+    ("html", "expected"),
+    [
+        # Control character next to a flattened pseudo-tag
+        (
+            "<div><foo@bar>\x01text</foo@bar></div>",
+            "<div>&lt;foo@bar&gt;text</div>",
+        ),
+        # Control character as a value
+        (
+            '<div><foo@bar baz="\x02">hi</foo@bar></div>',
+            '<div>&lt;foo@bar baz=""&gt;hi</div>',
+        ),
+        # NULL byte and noncharacters in ordinary text.
+        ("<div>a\x00b\ufffec\uffff</div>", "<div>abc</div>"),
+        # Email with binary garbage found in the wild.
+        (
+            (
+                "<div><p>hi</p><e!s\ufffd@\ufffd\ufffda "
+                ':\ufffd9\ufffd\x15\ufffdk\x1a\ufffd\x18\ufffd6="">'
+                "after</div>"
+            ),
+            (
+                "<div><p>hi</p>&lt;e!s\ufffd@\ufffd\ufffda "
+                ':\ufffd9\ufffd\ufffdk\ufffd\ufffd6=""&gt;after</div>'
+            ),
+        ),
+    ],
+)
+def test_get_html_tree_strips_xml_illegal_chars(html, expected):
+    assert render_html_tree(get_html_tree(html)) == expected
+
+
+def test_get_html_tree_keeps_xml_legal_whitespace():
+    # Control characters inside the XML 1.0 Char production and should survive.
+    tree = get_html_tree("<div>a\tb\nc</div>")
+    assert tree.xpath("string()") == "a\tb\nc"
+
+
 def test_get_html_tree_outlook_tag_roundtrip():
     # Outlook uses <o:p> for paragraph padding. The tag must survive the
     # get_html_tree → render_html_tree roundtrip unchanged.

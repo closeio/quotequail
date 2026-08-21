@@ -1,5 +1,12 @@
 # Changes
 
+## Unreleased
+
+* Strip XML-illegal characters from input HTML in `get_html_tree()`. `lxml`
+  parses them into the tree but raises `ValueError: All strings must be XML
+  compatible` when any text or attribute assignment later touches them. NULL
+  bytes, previously replaced with U+FFFD by the parser are now removed.
+
 ## v0.5.1
 
 * Fixes for lxml >=6 compatibility
