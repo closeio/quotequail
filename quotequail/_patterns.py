@@ -118,7 +118,7 @@ MULTIPLE_WHITESPACE_RE = re.compile(r"\s+")
 
 # Characters outside the XML 1.0 Char production spec (section 2.2)
 XML_ILLEGAL_CHARS_RE: re.Pattern[str] = re.compile(
-    "[\x00-\x08\x0b\x0c\x0e-\x1f\ufffe\uffff]"
+    "[\x00-\x08\x0b\x0c\x0e-\x1f\ud800-\udfff\ufffe\uffff]"
 )
 
 # Amount to lines to join to check for potential wrapped patterns in plain text

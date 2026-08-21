@@ -151,6 +151,8 @@ def test_get_html_tree_flattens_malformed_tags(html, expected):
         ),
         # NULL byte and noncharacters in ordinary text.
         ("<div>a\x00b\ufffec\uffff</div>", "<div>abc</div>"),
+        # Lone surrogate.
+        ("<div>a\ud800b</div>", "<div>ab</div>"),
         # Email with binary garbage found in the wild.
         (
             (
