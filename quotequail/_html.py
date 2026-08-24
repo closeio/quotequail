@@ -39,6 +39,8 @@ INLINE_TAGS = [
     "th",
 ]
 
+IMAGE_LINE_TEXT = "\ufffc"
+
 
 def trim_tree_after(element: Element, include_element: bool = True):
     """
@@ -399,6 +401,9 @@ def tree_line_generator(
     # Buffer for the current line.
     line = ""
 
+    # Whether the current line contains an image.
+    has_image = False
+
     # The reference tuple (element, position) for the start of the line.
     start_ref = None
 
@@ -426,6 +431,9 @@ def tree_line_generator(
             if is_block or line_break:
                 line = _trim_spaces(line)
 
+                if not line and has_image:
+                    line = IMAGE_LINE_TEXT
+
                 if line or line_break or is_forward:
                     end_ref = (el, state)
                     yield start_ref, end_ref, start_indentation_level, line
@@ -433,6 +441,7 @@ def tree_line_generator(
                     if max_lines is not None and counter > max_lines:
                         return
                     line = ""
+                    has_image = False
 
                     if is_forward:
                         # Simulate forward
@@ -449,6 +458,12 @@ def tree_line_generator(
                 if not line:
                     start_ref = (el, state)
                     start_indentation_level = indentation_level
+
+            # Flag the image after any pending line was flushed above, so that
+            # the image starts a line of its own (start_ref now points at it)
+            # and gets flushed at its end tag.
+            if tag_name == "img" and state is Position.Begin:
+                has_image = True
 
         elif isinstance(token, str):
             line += token
