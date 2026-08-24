@@ -1,6 +1,6 @@
 # Changes
 
-## Unreleased
+## v0.5.2
 
 * Strip XML-illegal characters from input HTML in `get_html_tree()`. `lxml`
   parses them into the tree but raises `ValueError: All strings must be XML
