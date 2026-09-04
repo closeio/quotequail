@@ -1,5 +1,11 @@
 # Changes
 
+## Unreleased
+
+* Flatten malformed tags whose names are not valid XML 1.0 Names in
+  `get_html_tree()`. Previously only tags containing `:`, `@` or `=` were
+  flattened.
+
 ## v0.5.2
 
 * Strip XML-illegal characters from input HTML in `get_html_tree()`. `lxml`
