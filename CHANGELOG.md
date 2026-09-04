@@ -1,6 +1,6 @@
 # Changes
 
-## Unreleased
+## v0.5.3
 
 * Flatten malformed tags whose names are not valid XML 1.0 Names in
   `get_html_tree()`. Previously only tags containing `:`, `@` or `=` were
