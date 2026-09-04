@@ -1,6 +1,6 @@
 import pytest
 
-from quotequail import quote_html
+from quotequail import quote_html, unwrap_html
 
 
 @pytest.mark.parametrize(
@@ -263,6 +263,24 @@ def test_tag_with_equals_sign():
             "</body></html>",
         ),
     ]
+
+
+def test_unwrap_html_tag_with_quote_in_name():
+    result = unwrap_html(
+        '<div"x>Hi there</div"x>'
+        "<div><br></div>"
+        "<div>On Sep 4, 2026, Foo &lt;foo@bar.com&gt; wrote:<br></div>"
+        "<blockquote><div>quoted line</div></blockquote>"
+        "<div>Regards</div>"
+    )
+    assert result == {
+        "type": "reply",
+        "html_top": '&lt;div"x&gt;Hi there',
+        "html_bottom": "<div>Regards</div>",
+        "html": "<div><div>quoted line</div></div>",
+        "date": "Sep 4, 2026",
+        "from": "Foo <foo@bar.com>",
+    }
 
 
 def test_encoding():

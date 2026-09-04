@@ -213,6 +213,25 @@ def slice_tree(
     return new_tree
 
 
+def _is_valid_xml_name(tag: str) -> bool:
+    """
+    Whether `tag` is a valid XML 1.0 Name (spec section 2.3,
+    https://www.w3.org/TR/REC-xml/#NT-Name), delegating the
+    character-level validation to lxml: each colon-separated part must
+    be an NCName, which is exactly what `lxml.etree.QName` checks.
+    ':' is a legal name character per the spec (reserved for
+    namespaces), so parts may be empty: 'o:p' and 'http:' are valid
+    names, 'b"x' and '1num' are not.
+    """
+    try:
+        for part in tag.split(":"):
+            if part:
+                lxml.etree.QName(part)
+    except ValueError:
+        return False
+    return True
+
+
 def get_html_tree(html_str: str) -> Element:
     """
     Given the HTML string, returns a LXML tree object. The tree is wrapped in
@@ -240,9 +259,12 @@ def get_html_tree(html_str: str) -> Element:
         htmlb = b"<div>" + htmlb + b"</div>"
         tree = lxml.html.fromstring(htmlb, parser=parser)
 
-    # HACK: `:` and `@` in tag names (Outlook's <o:p>, or unescaped
-    # <addr@domain> from a quoted reply header) crash slice_tree's XPath
-    # lookups later. Rewrite them here.
+    # HACK: lxml's HTML parser preserves tag names that break processing
+    # downstream: names that are not valid XML 1.0 Names (quotes, '@', '=',
+    # '<', ... from unescaped pseudo-tags like <addr@domain> or <b"x>) crash
+    # slice_tree's XPath lookups and lxml's tag restoration. Fix them all
+    # here, at the single parse choke point.
+    #
     for el in list(tree.iter()):
         if not isinstance(el.tag, str):
             # comments / processing instructions
@@ -254,18 +276,18 @@ def get_html_tree(html_str: str) -> Element:
             el.attrib["__tag_name"] = f"{prefix}:{el.tag}"
             el.tag = "span"
 
-        elif ":" in el.tag and not any(c in el.tag for c in ('"', "=", " ")):
-            # Outlook <o:p> padding: same treatment, round-tripped.
-            # Only applies to genuine namespace tags (e.g. o:p, v:shape).
-            # Tags that contain '"', '=', or spaces alongside ':' are garbage
-            # from malformed HTML (e.g. <ahref="https:...>) and must be
-            # flattened instead, since restoring them would raise ValueError.
+        elif ":" in el.tag and _is_valid_xml_name(el.tag):
+            # Valid ':'-containing name (Outlook's <o:p> padding): rename
+            # to <span>, restore on output. ':'-containing junk (e.g.
+            # <ahref="https:...>) fails the name check and is flattened
+            # below.
             el.attrib["__tag_name"] = el.tag
             el.tag = "span"
 
-        elif ":" in el.tag or "@" in el.tag or "=" in el.tag:
-            # Malformed tag whose name contains XPath-special or otherwise
-            # invalid characters. Flatten back to visible text.
+        elif not _is_valid_xml_name(el.tag):
+            # Malformed tag (unescaped <addr@domain>, <b"x>, ...):
+            # getelementpath() would embed its name verbatim in an XPath
+            # expression. Flatten back to visible text.
             attrs = "".join(
                 f' {k}="{html.escape(v, quote=True)}"'
                 for k, v in el.attrib.items()

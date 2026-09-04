@@ -127,12 +127,34 @@ def test_trim_before():
             "<div>x<a:b=c>click</a:b>z</div>",
             "<div>x&lt;a:b=c&gt;clickz</div>",
         ),
+        # '"' in tag name — getelementpath() embeds it verbatim in the
+        # XPath expression (XPathEvalError: Invalid expression)
+        (
+            '<div>x<b"x>y</b"x>z</div>',
+            '<div>x&lt;b"x&gt;yz</div>',
+        ),
+        # "'" in tag name — same as above
+        (
+            "<div>x<b'x>y</b'x>z</div>",
+            "<div>x&lt;b'x&gt;yz</div>",
+        ),
+        # '<' in tag name — would silently evaluate as an XPath comparison
+        # instead of matching the element
+        (
+            "<div>x<a<b>y</a<b>z</div>",
+            "<div>x&lt;a&lt;b&gt;yz</div>",
+        ),
+        # '&' in tag name
+        (
+            "<div>x<a&b>y</a&b>z</div>",
+            "<div>x&lt;a&amp;b&gt;yz</div>",
+        ),
     ],
 )
 def test_get_html_tree_flattens_malformed_tags(html, expected):
-    # Tags whose names contain XPath-special or invalid characters
-    # must be rendered as escaped visible text rather than roundtripped as real
-    # tags,which would raise ValueError in lxml
+    # Tag names that are not valid XML names must be flattened to escaped
+    # visible text instead of kept as elements: they crash slice_tree's
+    # XPath lookups and lxml's tag restoration.
     assert render_html_tree(get_html_tree(html)) == expected
 
 
