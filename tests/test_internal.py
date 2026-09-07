@@ -80,6 +80,14 @@ from quotequail._internal import extract_headers, parse_reply
                 "from": "John Doe <john@doe.example>",
             },
         ),
+        # Dutch
+        (
+            "Op wo 24 feb. 2015 om 22:48 schreef John Doe <john@doe.example>:",
+            {
+                "date": "wo 24 feb. 2015 om 22:48",
+                "from": "John Doe <john@doe.example>",
+            },
+        ),
         # Other
         (
             "2009/5/12 John Doe <john@doe.example>",
