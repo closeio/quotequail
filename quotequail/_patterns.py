@@ -9,7 +9,7 @@ REPLY_PATTERNS = [
     "^Den (.*) skrev (.*):$",  # Swedish
     "^Em (.*) escreveu:$",  # Brazillian portuguese
     "^Op (.*) schreef (.*):$",  # Dutch (Apple Mail/Gmail)
-    r"^Op (.*) heeft (.*?)(?: het volgende)? geschreven:$",  # Dutch (Discourse/forum)
+    r"^Op (.*) heeft (.*?)(?: het volgende)? geschreven:$",  # Dutch (forum)
     "([0-9]{4}/[0-9]{1,2}/[0-9]{1,2}) (.* <.*@.*>)$",  # gmail (?) reply
 ]
 
