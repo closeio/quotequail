@@ -330,6 +330,22 @@ someone@example.com> wrote:
                 "text": "Some quoted text",
             },
         ),
+        # Dutch reply (Discourse/forum "heeft ... geschreven" form)
+        (
+            """Hello world.
+
+Op 24 feb. 2015 om 22:48 heeft John Doe <john@doe.example> geschreven:
+
+> Some quoted text
+""",
+            {
+                "type": "reply",
+                "date": "24 feb. 2015 om 22:48",
+                "from": "John Doe <john@doe.example>",
+                "text_top": "Hello world.",
+                "text": "Some quoted text",
+            },
+        ),
         # French email
         (
             """
@@ -419,6 +435,29 @@ Learn Spanish
                 "subject": "Weekend Spanish classes",
                 "to": "recipient@example.com",
                 "text": "Spanish Classes\nLearn Spanish",
+            },
+        ),
+        # Forwarded Gmail Dutch
+        (
+            """Hello
+
+---------- Doorgestuurd bericht ----------
+Van: Someone <noreply@example.com>
+Datum: 26 april 2013 20:13
+Onderwerp: Weekend Dutch classes
+Aan: recipient@example.com
+
+Dutch Classes
+Learn Dutch
+""",
+            {
+                "text_top": "Hello",
+                "type": "forward",
+                "from": "Someone <noreply@example.com>",
+                "date": "26 april 2013 20:13",
+                "subject": "Weekend Dutch classes",
+                "to": "recipient@example.com",
+                "text": "Dutch Classes\nLearn Dutch",
             },
         ),
     ],

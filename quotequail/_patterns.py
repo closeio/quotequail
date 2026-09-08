@@ -8,6 +8,8 @@ REPLY_PATTERNS = [
     r"^(.*) написал\(а\):$",  # Russian
     "^Den (.*) skrev (.*):$",  # Swedish
     "^Em (.*) escreveu:$",  # Brazillian portuguese
+    "^Op (.*) schreef (.*):$",  # Dutch (Apple Mail/Gmail)
+    r"^Op (.*) heeft (.*?)(?: het volgende)? geschreven:$",  # Dutch (forum)
     "([0-9]{4}/[0-9]{1,2}/[0-9]{1,2}) (.* <.*@.*>)$",  # gmail (?) reply
 ]
 
@@ -21,14 +23,17 @@ FORWARD_MESSAGES = [
     "Anfang der weitergeleiteten E-Mail",
     "Début du message réexpédié",
     "Inicio del mensaje reenviado",
+    "Begin doorgestuurd bericht",  # Dutch
     # gmail/evolution forward
     "Forwarded [mM]essage",
     "Mensaje reenviado",
     "Vidarebefordrat meddelande",
+    "Doorgestuurd bericht",  # Dutch
     # outlook
     "Original [mM]essage",
     "Ursprüngliche Nachricht",
     "Mensaje [oO]riginal",
+    "Oorspronkelijk bericht",  # Dutch
     # Thunderbird forward
     "Message transféré",
     # mail.ru forward (Russian)
@@ -68,6 +73,7 @@ HEADER_MAP = {
     "de": "from",
     "от кого": "from",
     "från": "from",
+    "van": "from",
     "to": "to",
     "an": "to",
     "para": "to",
@@ -75,6 +81,7 @@ HEADER_MAP = {
     "pour": "to",
     "кому": "to",
     "till": "to",
+    "aan": "to",
     "cc": "cc",
     "kopie": "cc",
     "kopia": "cc",
@@ -85,6 +92,7 @@ HEADER_MAP = {
     "antwort an": "reply-to",
     "répondre à": "reply-to",
     "responder a": "reply-to",
+    "antwoord aan": "reply-to",
     "date": "date",
     "sent": "date",
     "received": "date",
@@ -94,6 +102,7 @@ HEADER_MAP = {
     "enviados": "date",
     "fecha": "date",
     "дата": "date",
+    "verzonden": "date",
     "subject": "subject",
     "betreff": "subject",
     "asunto": "subject",
@@ -101,6 +110,7 @@ HEADER_MAP = {
     "sujet": "subject",
     "тема": "subject",
     "ämne": "subject",
+    "onderwerp": "subject",
 }
 
 COMPILED_PATTERN_MAP = {

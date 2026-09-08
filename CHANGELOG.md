@@ -2,6 +2,7 @@
 
 ## v0.5.3
 
+* Added support for Dutch reply and forward patterns.
 * Flatten malformed tags whose names are not valid XML 1.0 Names in
   `get_html_tree()`. Previously only tags containing `:`, `@` or `=` were
   flattened.
