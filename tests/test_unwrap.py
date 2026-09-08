@@ -421,6 +421,29 @@ Learn Spanish
                 "text": "Spanish Classes\nLearn Spanish",
             },
         ),
+        # Forwarded Gmail Dutch
+        (
+            """Hello
+
+---------- Doorgestuurd bericht ----------
+Van: Someone <noreply@example.com>
+Datum: 26 april 2013 20:13
+Onderwerp: Weekend Dutch classes
+Aan: recipient@example.com
+
+Dutch Classes
+Learn Dutch
+""",
+            {
+                "text_top": "Hello",
+                "type": "forward",
+                "from": "Someone <noreply@example.com>",
+                "date": "26 april 2013 20:13",
+                "subject": "Weekend Dutch classes",
+                "to": "recipient@example.com",
+                "text": "Dutch Classes\nLearn Dutch",
+            },
+        ),
     ],
 )
 def test_unwrap(text, expected):
