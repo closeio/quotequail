@@ -80,11 +80,28 @@ from quotequail._internal import extract_headers, parse_reply
                 "from": "John Doe <john@doe.example>",
             },
         ),
-        # Dutch
+        # Dutch (Apple Mail/Gmail)
         (
             "Op wo 24 feb. 2015 om 22:48 schreef John Doe <john@doe.example>:",
             {
                 "date": "wo 24 feb. 2015 om 22:48",
+                "from": "John Doe <john@doe.example>",
+            },
+        ),
+        # Dutch (Discourse/forum, "het volgende" variant)
+        (
+            "Op 24 aug. 2013 om 16:48 heeft ven88 <info@discourse.org> "
+            "het volgende geschreven:",
+            {
+                "date": "24 aug. 2013 om 16:48",
+                "from": "ven88 <info@discourse.org>",
+            },
+        ),
+        # Dutch (Discourse/forum, short variant)
+        (
+            "Op 24 feb. 2015 om 22:48 heeft John Doe <john@doe.example> geschreven:",
+            {
+                "date": "24 feb. 2015 om 22:48",
                 "from": "John Doe <john@doe.example>",
             },
         ),

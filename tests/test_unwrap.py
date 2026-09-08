@@ -330,6 +330,22 @@ someone@example.com> wrote:
                 "text": "Some quoted text",
             },
         ),
+        # Dutch reply (Discourse/forum "heeft ... geschreven" form)
+        (
+            """Hello world.
+
+Op 24 feb. 2015 om 22:48 heeft John Doe <john@doe.example> geschreven:
+
+> Some quoted text
+""",
+            {
+                "type": "reply",
+                "date": "24 feb. 2015 om 22:48",
+                "from": "John Doe <john@doe.example>",
+                "text_top": "Hello world.",
+                "text": "Some quoted text",
+            },
+        ),
         # French email
         (
             """
