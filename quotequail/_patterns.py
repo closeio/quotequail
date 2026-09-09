@@ -34,9 +34,9 @@ FORWARD_MESSAGES = [
     "Ursprüngliche Nachricht",
     "Mensaje [oO]riginal",
     "Oorspronkelijk [bB]ericht",  # Dutch
-    "Origineel [bB]ericht",  # Dutch (alternate translation)
     # Thunderbird forward
     "Message transféré",
+    "Origineel [bB]ericht",  # Dutch (alternate translation)
     # mail.ru forward (Russian)
     "Пересылаемое сообщение",
 ]
