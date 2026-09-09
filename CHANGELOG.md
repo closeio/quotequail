@@ -1,5 +1,10 @@
 # Changes
 
+## Unreleased
+
+* Recognize "Origineel bericht" as an additional Dutch translation of
+  "Original Message" in forward markers.
+
 ## v0.5.3
 
 * Added support for Dutch reply and forward patterns.

@@ -193,6 +193,24 @@ OHAI""",
                 "text": "OHAI",
             },
         ),
+        # Outlook Dutch (Origineel bericht)
+        (
+            """-------- Origineel bericht --------
+Onderwerp: \tSome Newsletter
+Datum: \tFri, 19 Jun 2009 19:16:04 +0200
+Van: \tfrom <from@example.com>
+Aan: \tto@example.com
+
+OHAI""",
+            {
+                "type": "forward",
+                "from": "from <from@example.com>",
+                "date": "Fri, 19 Jun 2009 19:16:04 +0200",
+                "subject": "Some Newsletter",
+                "to": "to@example.com",
+                "text": "OHAI",
+            },
+        ),
         # Some clients (Blackberry?) have weird whitespace rules
         (
             """hello world
