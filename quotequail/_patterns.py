@@ -23,18 +23,18 @@ FORWARD_MESSAGES = [
     "Anfang der weitergeleiteten E-Mail",
     "Début du message réexpédié",
     "Inicio del mensaje reenviado",
-    "Begin doorgestuurd bericht",  # Dutch
+    "Begin [dD]oorgestuurd bericht",  # Dutch
     # gmail/evolution forward
     "Forwarded [mM]essage",
     "Mensaje reenviado",
     "Vidarebefordrat meddelande",
-    "Doorgestuurd bericht",  # Dutch
+    "Doorgestuurd [bB]ericht",  # Dutch
     # outlook
     "Original [mM]essage",
     "Ursprüngliche Nachricht",
     "Mensaje [oO]riginal",
-    "Oorspronkelijk bericht",  # Dutch
-    "Origineel bericht",  # Dutch (alternate translation)
+    "Oorspronkelijk [bB]ericht",  # Dutch
+    "Origineel [bB]ericht",  # Dutch (alternate translation)
     # Thunderbird forward
     "Message transféré",
     # mail.ru forward (Russian)
