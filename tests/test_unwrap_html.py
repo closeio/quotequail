@@ -22,6 +22,41 @@ def test_unwrap_html_simple(html, expected):
     assert unwrap_html(html) == expected
 
 
+def test_unwrap_html_image_only_quoted_body():
+    # The quoted message consists of an inline image only, with no text.
+    html = (
+        "<p>Top text</p>"
+        "<p>From: someone@example.com<br>To: anyone@example.com</p>"
+        '<p><img src="cid:image001.jpg"></p>'
+    )
+
+    assert unwrap_html(html) == {
+        "type": "forward",
+        "from": "someone@example.com",
+        "to": "anyone@example.com",
+        "html_top": "<p>Top text</p>",
+        "html": '<p><img src="cid:image001.jpg"></p>',
+    }
+
+
+def test_unwrap_html_image_at_start_of_quoted_body():
+    # An image at the start of the quoted message, followed by text, used to
+    # be dropped from the quote (closeio/quotequail#22).
+    html = (
+        "<p>Top text</p>"
+        "<p>From: someone@example.com<br>To: anyone@example.com</p>"
+        '<p><img src="cid:image001.jpg"><br>Quoted text</p>'
+    )
+
+    assert unwrap_html(html) == {
+        "type": "forward",
+        "from": "someone@example.com",
+        "to": "anyone@example.com",
+        "html_top": "<p>Top text</p>",
+        "html": '<p><img src="cid:image001.jpg"><br>Quoted text</p>',
+    }
+
+
 @pytest.mark.parametrize(
     ("file", "expected"),
     [
