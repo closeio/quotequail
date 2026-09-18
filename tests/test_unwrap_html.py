@@ -57,6 +57,31 @@ def test_unwrap_html_image_at_start_of_quoted_body():
     }
 
 
+def test_unwrap_html_text_before_nested_headers_in_quote():
+    html = (
+        "<div>Top text</div>"
+        "<div>On Mon 14 Sep 2026, someone@example.com wrote:</div>"
+        "<blockquote>"
+        "<div>Quoted text</div>"
+        '<hr style="display:inline-block;width:98%" tabindex="-1">'
+        '<div id="divRplyFwdMsg" dir="ltr">'
+        '<font face="Calibri, sans-serif" style="font-size:11pt" color="#000000">'
+        "<b>From:</b> anyone@example.com<br>"
+        "<b>Sent:</b> Friday, 11 Sep 2026</font>"
+        "</div>"
+        "<div>Older message</div>"
+        "</blockquote>"
+    )
+
+    assert unwrap_html(html) == {
+        "type": "reply",
+        "date": "Mon 14 Sep 2026",
+        "from": "someone@example.com",
+        "html_top": "<div>Top text</div>",
+        "html": '<div><div>Quoted text</div><hr style="display:inline-block;width:98%" tabindex="-1"><div id="divRplyFwdMsg" dir="ltr"><font face="Calibri, sans-serif" style="font-size:11pt" color="#000000"><b>From:</b> anyone@example.com<br><b>Sent:</b> Friday, 11 Sep 2026</font></div><div>Older message</div></div>',
+    }
+
+
 @pytest.mark.parametrize(
     ("file", "expected"),
     [

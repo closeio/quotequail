@@ -348,6 +348,25 @@ someone@example.com> wrote:
                 "text": "Some quoted text",
             },
         ),
+        # Reply with text before nested headers
+        (
+            """Top text
+
+On Mon 14 Sep 2026, someone@example.com wrote:
+
+> Quoted text
+> From: anyone@example.com
+> Sent: Friday, 11 Sep 2026
+> > Older message
+""",
+            {
+                "type": "reply",
+                "date": "Mon 14 Sep 2026",
+                "from": "someone@example.com",
+                "text_top": "Top text",
+                "text": "Quoted text\nFrom: anyone@example.com\nSent: Friday, 11 Sep 2026\n> Older message",
+            },
+        ),
         # Dutch reply (Discourse/forum "heeft ... geschreven" form)
         (
             """Hello world.
