@@ -1,7 +1,9 @@
 # Changes
 
-## Unreleased
+## v0.5.4
 
+* Keep quoted HTML when the quoted content is only an image. Previously
+  `unwrap_html` dropped the quote and returned only `html_top`.
 * Recognize "Origineel bericht" as an additional Dutch translation of
   "Original Message" in forward markers.
 
