@@ -329,7 +329,9 @@ def unwrap(
             )
             start3 = result[0] if result else 0
             typ3 = result[2] if result else None
-            if typ3 == "headers":
+            if typ3 == "headers" and not any(
+                line.strip() for line in unquoted[:start3]
+            ):
                 hdrs, hdrs_length = extract_headers(
                     unquoted[start3:], max_wrap_lines
                 )
@@ -396,7 +398,9 @@ def unwrap(
         )
         start2 = result[0] if result else 0
         typ2 = result[2] if result else None
-        if typ2 == "headers":
+        if typ2 == "headers" and not any(
+            line.strip() for line in unquoted[:start2]
+        ):
             main_type = "forward"
             hdrs, hdrs_length = extract_headers(
                 unquoted[start2:], max_wrap_lines

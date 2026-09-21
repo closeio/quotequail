@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* Keep quoted text that appears before a nested header block inside a
+  reply or quote, instead of dropping it.
 * Recognize "Origineel bericht" as an additional Dutch translation of
   "Original Message" in forward markers.
 
