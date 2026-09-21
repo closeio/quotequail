@@ -4,7 +4,7 @@
 from . import _internal, _patterns
 from ._enums import Position
 
-__version__ = "0.5.3"
+__version__ = "0.5.4"
 __all__ = ["quote", "quote_html", "unwrap", "unwrap_html"]
 
 
