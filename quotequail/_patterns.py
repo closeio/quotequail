@@ -14,7 +14,18 @@ REPLY_PATTERNS = [
 ]
 
 REPLY_DATE_SPLIT_REGEX = re.compile(
-    r"^(.*(:[0-9]{2}( [apAP]\.?[mM]\.?)?)), (.*)?$"
+    r"^(.*(:[0-9]{2}(\s[apAP]\.?[mM]\.?)?)), (.*)?$"
+)
+
+# Gmail puts no comma between the time and the sender
+# ("Mon, Jan 5, 2015 at 3:04 PM John Doe <john@doe.example>"), and recent
+# versions separate the time from AM/PM with a narrow no-break space (U+202F).
+# Used only when no comma follows the time at all, so every line with one
+# ("11:30:41 AM EDT, Jane Roe", "19:50 +0100, John Doe", "17:02 , John Doe")
+# keeps the existing comma split. The sender may not start with a digit, "+"
+# or "-", so a bare timezone offset is never taken for it.
+REPLY_DATE_SPLIT_NO_COMMA_REGEX = re.compile(
+    r"^(.*:[0-9]{2}(?:\s[apAP]\.?[mM]\.?)?)\s+([^\s\d+\-,][^,]*)$"
 )
 
 FORWARD_MESSAGES = [

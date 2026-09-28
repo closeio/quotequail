@@ -5,6 +5,7 @@ from ._patterns import (
     COMPILED_PATTERN_MAP,
     HEADER_MAP,
     HEADER_RE,
+    REPLY_DATE_SPLIT_NO_COMMA_REGEX,
     REPLY_DATE_SPLIT_REGEX,
     STRIP_SPACE_CHARS,
 )
@@ -161,7 +162,9 @@ def parse_reply(line: str) -> dict[str, str] | None:
                 # We're lucky and got both date and user split up.
                 date, user = groups
             else:
-                split_match = REPLY_DATE_SPLIT_REGEX.match(groups[0])
+                split_match = REPLY_DATE_SPLIT_REGEX.match(
+                    groups[0]
+                ) or REPLY_DATE_SPLIT_NO_COMMA_REGEX.match(groups[0])
                 if split_match:
                     split_groups = split_match.groups()
                     date = split_groups[0]
