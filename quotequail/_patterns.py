@@ -136,6 +136,18 @@ XML_ILLEGAL_CHARS_RE: re.Pattern[str] = re.compile(
 # messages.
 MAX_WRAP_LINES = 2
 
+# Amount of lines to join for a reply line ("On DATE, USER wrote:"). Gmail
+# wraps it at the date, before the address and before "wrote:", so in a long
+# thread it commonly spans three or four lines:
+#
+#   On Mon, Jan 5, 2015 at 3:04 PM
+#   John Doe <
+#   john@doe.example> wrote:
+#
+# Reply patterns are anchored at both ends ("^On ... wrote:$"), so joining more
+# lines only matches when the window starts and ends exactly on the pattern.
+MAX_REPLY_WRAP_LINES = 4
+
 # minimum number of headers that we recognize
 MIN_HEADER_LINES = 2
 

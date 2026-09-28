@@ -5,6 +5,7 @@ from ._patterns import (
     COMPILED_PATTERN_MAP,
     HEADER_MAP,
     HEADER_RE,
+    MAX_REPLY_WRAP_LINES,
     REPLY_DATE_SPLIT_REGEX,
     STRIP_SPACE_CHARS,
 )
@@ -31,8 +32,13 @@ def find_pattern_on_line(
     Returns None if no pattern was found.
     """
     for typ, regexes in COMPILED_PATTERN_MAP.items():
+        wrap_lines = (
+            max(max_wrap_lines, MAX_REPLY_WRAP_LINES)
+            if typ == "reply"
+            else max_wrap_lines
+        )
         for regex in regexes:
-            for m in range(max_wrap_lines):
+            for m in range(wrap_lines):
                 match_line = join_wrapped_lines(lines[n : n + 1 + m])
                 if match_line.startswith(">"):
                     match_line = match_line[1:].strip()
