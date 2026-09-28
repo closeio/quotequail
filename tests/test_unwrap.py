@@ -348,6 +348,44 @@ someone@example.com> wrote:
                 "text": "Some quoted text",
             },
         ),
+        # Reply line wrapped over three lines (Gmail wraps at the date, before
+        # the address and before "wrote:")
+        (
+            """Hello world.
+
+On 2012-10-16 at 17:02 ,
+Someone <
+someone@example.com> wrote:
+
+> Some quoted text
+""",
+            {
+                "type": "reply",
+                "date": "2012-10-16 at 17:02",
+                "from": "Someone <someone@example.com>",
+                "text_top": "Hello world.",
+                "text": "Some quoted text",
+            },
+        ),
+        # ... and over four
+        (
+            """Hello world.
+
+On 2012-10-16 at 17:02 ,
+Someone <
+someone@example.com>
+wrote:
+
+> Some quoted text
+""",
+            {
+                "type": "reply",
+                "date": "2012-10-16 at 17:02",
+                "from": "Someone <someone@example.com>",
+                "text_top": "Hello world.",
+                "text": "Some quoted text",
+            },
+        ),
         # Dutch reply (Discourse/forum "heeft ... geschreven" form)
         (
             """Hello world.

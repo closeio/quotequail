@@ -1,5 +1,13 @@
 # Changes
 
+## Unreleased
+
+* Recognize a reply line ("On DATE, USER wrote:") wrapped over up to four
+  lines (`MAX_REPLY_WRAP_LINES`). Gmail wraps it at the date, before the
+  address and before "wrote:", and a three- or four-line reply line was not
+  recognized at all: the message came back as an anonymous quote with no
+  `from` or `date`. Forward markers and headers keep `MAX_WRAP_LINES`.
+
 ## v0.5.4
 
 * Keep quoted HTML when the quoted content is only an image. Previously
