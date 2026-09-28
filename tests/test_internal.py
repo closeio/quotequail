@@ -40,6 +40,53 @@ from quotequail._internal import extract_headers, parse_reply
             "On 8 o'clock, John Doe wrote:",
             {"date": "8 o'clock", "from": "John Doe"},
         ),
+        # Gmail: no comma between the time and the sender
+        (
+            "On Mon, Jan 5, 2015 at 3:04 PM John Doe <john@doe.example> wrote:",
+            {
+                "date": "Mon, Jan 5, 2015 at 3:04 PM",
+                "from": "John Doe <john@doe.example>",
+            },
+        ),
+        (
+            "On Mon, Jan 5, 2015 at 15:04 John Doe <john@doe.example> wrote:",
+            {
+                "date": "Mon, Jan 5, 2015 at 15:04",
+                "from": "John Doe <john@doe.example>",
+            },
+        ),
+        # Gmail: narrow no-break space (U+202F) before AM/PM
+        (
+            "On Tue, Jan 6, 2015 at 9:15\u202fAM John Doe <john@doe.example> wrote:",
+            {
+                "date": "Tue, Jan 6, 2015 at 9:15\u202fAM",
+                "from": "John Doe <john@doe.example>",
+            },
+        ),
+        # Gmail: sender without a display name
+        (
+            "On Mon, Jan 5, 2015 at 3:04 PM <john@doe.example> wrote:",
+            {
+                "date": "Mon, Jan 5, 2015 at 3:04 PM",
+                "from": "<john@doe.example>",
+            },
+        ),
+        # Apple Mail with a narrow no-break space before PM
+        (
+            "On Feb 22, 2015, at 9:19 PM, John Doe <john@doe.example> wrote:",
+            {
+                "date": "Feb 22, 2015, at 9:19 PM",
+                "from": "John Doe <john@doe.example>",
+            },
+        ),
+        # A timezone offset after the time is part of the date, not the sender
+        (
+            "On Mon, 6 Jan 2014 19:50 +0100, John Doe <john@doe.example> wrote:",
+            {
+                "date": "Mon, 6 Jan 2014 19:50 +0100",
+                "from": "John Doe <john@doe.example>",
+            },
+        ),
         # French
         (
             "Le 6 janv. 2014 à 19:50, John Doe <john@doe.example> a écrit :",
