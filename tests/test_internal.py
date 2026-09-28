@@ -116,6 +116,65 @@ def test_parse_reply(line, expected):
     assert parse_reply(line) == expected
 
 
+def test_extract_headers_value_wrapped_before_another_header():
+    # A "To:" with several recipients, wrapped over four lines by the client.
+    lines = [
+        "*From: *Jane Roe <",
+        "jane@example.com>",
+        "*Date: *Monday,",
+        "January 5, 2015 at 3:04 PM",
+        "*To: *John Doe <",
+        "john@example.com>,",
+        "Mary Major <",
+        "mary@example.com>",
+        "*Cc: *Richard Roe <",
+        "richard@example.com>",
+        "*Subject: *Re: Hello",
+        "",
+        "Hi Jane,",
+    ]
+    assert extract_headers(lines, 2) == (
+        {
+            "from": "Jane Roe <jane@example.com>",
+            "date": "Monday, January 5, 2015 at 3:04 PM",
+            "to": "John Doe <john@example.com>, Mary Major <mary@example.com>",
+            "cc": "Richard Roe <richard@example.com>",
+            "subject": "Re: Hello",
+        },
+        11,
+    )
+
+
+def test_extract_headers_does_not_absorb_the_body():
+    # No blank line after the last header: beyond the one continuation line
+    # MAX_WRAP_LINES already allows, the body must not become part of the
+    # subject, however many lines it has.
+    lines = [
+        "From: Jane Roe <jane@example.com>",
+        "Subject: Hello",
+        "Hi John,",
+        "this is the first line of the body",
+        "and this is the second.",
+    ]
+    assert extract_headers(lines, 2) == (
+        {"from": "Jane Roe <jane@example.com>", "subject": "Hello Hi John,"},
+        3,
+    )
+
+
+def test_extract_headers_bold_names():
+    # "*From: *" leaves the closing "*" in front of the value; "*From:*" does
+    # not, and a "*" in the value itself is content.
+    assert extract_headers(["*From: *Jane", "*Subject: *Re: x"], 2) == (
+        {"from": "Jane", "subject": "Re: x"},
+        2,
+    )
+    assert extract_headers(["*From:* Jane", "*Subject:* *Urgent*"], 2) == (
+        {"from": "Jane", "subject": "*Urgent*"},
+        2,
+    )
+
+
 def test_extract_headers():
     assert extract_headers([], 2) == ({}, 0)
     assert extract_headers(["test"], 2) == ({}, 0)
