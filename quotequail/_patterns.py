@@ -136,6 +136,20 @@ XML_ILLEGAL_CHARS_RE: re.Pattern[str] = re.compile(
 # messages.
 MAX_WRAP_LINES = 2
 
+# Amount of lines a header value may wrap over when another known header
+# follows it, e.g. a "To:" with several recipients, wrapped by the client:
+#
+#   *To: *John Doe <
+#   john@doe.example>,
+#   Mary Major <
+#   mary@doe.example>
+#   *Cc: *...
+#
+# Beyond MAX_WRAP_LINES a line only counts as a continuation when a known
+# header line follows within this window (before a blank line), so the body
+# text after the last header is never absorbed into it.
+MAX_HEADER_WRAP_LINES = 8
+
 # minimum number of headers that we recognize
 MIN_HEADER_LINES = 2
 

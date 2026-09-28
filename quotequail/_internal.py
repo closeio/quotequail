@@ -5,6 +5,7 @@ from ._patterns import (
     COMPILED_PATTERN_MAP,
     HEADER_MAP,
     HEADER_RE,
+    MAX_HEADER_WRAP_LINES,
     REPLY_DATE_SPLIT_REGEX,
     STRIP_SPACE_CHARS,
 )
@@ -115,6 +116,20 @@ def extract_headers(
 
     lines_processed = 0
 
+    def known_header_follows(n: int) -> bool:
+        """Whether a known header line follows line n within the wrap window,
+        before a blank line."""
+        window = lines[n + 1 : n + 1 + MAX_HEADER_WRAP_LINES - extend_lines]
+        for next_line in window:
+            if not next_line.strip():
+                return False
+            next_match = HEADER_RE.match(next_line)
+            if next_match and (
+                next_match.group(1).strip().lower() in HEADER_MAP
+            ):
+                return True
+        return False
+
     for n, line in enumerate(lines):
         if not line.strip():
             header_name = None
@@ -127,11 +142,19 @@ def extract_headers(
             extend_lines = 0
 
             if header_name in HEADER_MAP:
+                # A bold name closed after the space ("*From: *John") leaves
+                # its closing "*" in front of the value. ("*From:* John" is
+                # already handled by HEADER_RE, and a "*" there is content.)
+                closed_by_regex = line[match.start(2) - 1] == "*"
+                if line.startswith("*") and not closed_by_regex:
+                    header_value = header_value.strip().removeprefix("*")
                 hdrs[HEADER_MAP[header_name]] = header_value.strip()
             lines_processed = n + 1
         else:
             extend_lines += 1
-            if extend_lines < max_wrap_lines and header_name in HEADER_MAP:
+            if header_name in HEADER_MAP and (
+                extend_lines < max_wrap_lines or known_header_follows(n)
+            ):
                 hdrs[HEADER_MAP[header_name]] = join_wrapped_lines(
                     [hdrs[HEADER_MAP[header_name]], line.strip()]
                 )
