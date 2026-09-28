@@ -1,5 +1,14 @@
 # Changes
 
+## Unreleased
+
+* Split Gmail's reply line ("On Sat, Sep 26, 2026 at 2:21 PM John Doe
+  <john@doe.example> wrote:") into date and sender correctly. Gmail puts no
+  comma after the time, so the line fell back to splitting at the last comma,
+  inside the date: `date` came back as "Sat, Sep 26" and `from` as
+  "2026 at 2:21 PM John Doe <john@doe.example>". Also accept a narrow no-break
+  space (U+202F) before AM/PM, as recent Gmail writes it.
+
 ## v0.5.4
 
 * Keep quoted HTML when the quoted content is only an image. Previously
